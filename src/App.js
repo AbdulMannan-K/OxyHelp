@@ -1,24 +1,43 @@
-import logo from './logo.svg';
 import './App.css';
+import NavBar from "./components/NavBar";
+import {CapsuleInfo} from "./components/capsule/CapsuleInfo";
+import {WeekScheduler} from "./components/capsule/Calendar";
+import {LocalizationProvider} from "@mui/x-date-pickers";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
+import Users from "./components/users/Users";
+import React from "react";
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <div  className=" min-h-screen dark:bg-gray-800">
+                <NavBar></NavBar>
+                <Outlet/>
+            </div>
+        </LocalizationProvider>,
+        children:[
+            {
+                path:"/capsules",
+                element: <div className="container flex flex-col gap-4">
+                    <CapsuleInfo/>
+                    <WeekScheduler/>
+                </div>
+            },
+            {
+                path:"/clients",
+                element: <div className="container">
+                    <Users/>
+                </div>
+            }
+        ]
+    },
+]);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <RouterProvider router={router} />
   );
 }
 
