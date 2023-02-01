@@ -7,7 +7,10 @@ export const addUser = async (user) => {
             email:user.email,
             firstName:user.firstName,
             lastName:user.lastName,
-            questionnaire:{},
+            gender:user.gender,
+            birthDay:user.birthDay,
+            city:user.city,
+            questionnaire:user.questionnaire,
             history:[],
         });
         console.log("Document written with ID: ", docRef);

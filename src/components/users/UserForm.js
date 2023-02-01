@@ -7,8 +7,14 @@ const initialValues = {
     firstName:'',
     lastName:'',
     phoneNumber:'',
+    city:'',
+    birthDay:'',
+    gender:'',
     email:'',
-    questionnaire:{},
+    questionnaire:[
+        {question:'Are you alright ?', answer:'yes'},
+        {question:'Are you fine ?', answer:'yes'}
+    ],
     history:[],
 }
 
@@ -20,6 +26,12 @@ function UserForm(props) {
             temp.firstName = fieldValues.firstName ? "" : "This field is required."
         if ('lastName' in fieldValues)
             temp.lastName = fieldValues.lastName ? "" : "This field is required."
+        if ('gender' in fieldValues)
+            temp.gender = fieldValues.gender ? "" : "This field is required."
+        if ('birthDay' in fieldValues)
+            temp.birthDay = fieldValues.birthDay ? "" : "This field is required."
+        if ('city' in fieldValues)
+            temp.city = fieldValues.city ? "" : "This field is required."
         if ('phoneNumber' in fieldValues)
             temp.phoneNumber = fieldValues.phoneNumber ? "" : "This field is required."
         if ('email' in fieldValues)
@@ -70,6 +82,22 @@ function UserForm(props) {
                 error={errors.lastName}
             />
                 <Input
+                    name="gender"
+                    label="Gender"
+                    variant="outlined"
+                    value={values.gender}
+                    onChange={handleInputChange}
+                    error={errors.gender}
+                />
+                <Input
+                    name="birthDay"
+                    label="Birth Day"
+                    variant="outlined"
+                    value={values.birthDay}
+                    onChange={handleInputChange}
+                    error={errors.birthDay}
+                />
+                <Input
                     name="phoneNumber"
                     label="Phone Number"
                     variant="outlined"
@@ -83,7 +111,14 @@ function UserForm(props) {
                     value={values.email}
                     onChange={handleInputChange}
                     error={errors.email}/>
-            <div>
+                <Input
+                    name="city"
+                    label="City"
+                    variant="outlined"
+                    value={values.city}
+                    onChange={handleInputChange}
+                    error={errors.city}/>
+            <div style={{display:'block'}}>
                 <Button
                     type="submit"
                     onClick={handleSubmit}

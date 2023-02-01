@@ -16,6 +16,7 @@ import IconButton from "@mui/material/IconButton";
 import Popup from "./Popup";
 import useTable from "./useTable";
 import {addUser, getUsers} from "../../services/services";
+import QuestionForm from "./QuestionForm";
 
 const styles = {
     pageContent: {
@@ -57,15 +58,16 @@ export default function Users() {
         }
     })
     const [openPopup, setOpenPopup] = useState(false)
+    const [openQPopup, setOpenQPopup] = useState(false)
 
     
-    // const getItems=()=>{
-    //     itemService.getItems(setRecords)
-    // }
+    const getClients=async () => {
+        setRecords(await getUsers())
+    }
     
-    // React.useEffect(()=>{
-    //     getItems()
-    // },[0])
+    React.useEffect(()=>{
+        getClients()
+    },[0])
 
     const {
         TblContainer,
@@ -87,15 +89,12 @@ export default function Users() {
     }
     const addOrEdit = async (user, resetForm) => {
         // setRecords([records, item])
-        setRecords((await addUser(user)));
         // console.log((await addUser(user)));
-        // if (item.id === 0)
-        //     itemService.addItem(item,valid,invalid)
-        // else
-        //     itemService.updateItem(item,valid,invalid,true, `Item updated successfully` )
+        setRecords((await addUser(user)));
         resetForm()
         setRecordForEdit(null);
         setOpenPopup(false)
+        setOpenQPopup(false);
 //        setRecords([...itemService.getItems()]);
 //         getItems()
     }
@@ -155,7 +154,7 @@ export default function Users() {
                                     setOpenPopup(true);
                                     setRecordForEdit(null);
                                 }}
-                            >Add Items</Button>
+                            >Add Client</Button>
                         </div>
                     </div>
                     <TblContainer>
@@ -178,7 +177,12 @@ export default function Users() {
                                         <TableCell align='right'>
                                             <IconButton
                                                 color="primary"
-                                                onClick={() => {  }}
+                                                onClick={() => {
+                                                    setRecordForEdit(user);
+                                                    console.log('hello')
+                                                    console.log(user.questionnaire)
+                                                    setOpenQPopup(true);
+                                                }}
                                             ><VisibilityIcon fontSize="small"/>
                                             </IconButton>
                                         </TableCell>
@@ -197,13 +201,23 @@ export default function Users() {
                     <TblPagination/>
                 </Paper>
                 <Popup
-                    title="Users Form"
+                    title="Clients Form"
                     openPopup={openPopup}
                     setOpenPopup={setOpenPopup}
                 >
                     <UserForm
                         recordForEdit={recordForEdit}
                         addItem={addOrEdit}
+                    />
+                </Popup>
+                <Popup
+                    title="Questionnaire"
+                    openPopup={openQPopup}
+                    setOpenPopup={setOpenQPopup}
+                >
+                    <QuestionForm
+                        questions={recordForEdit}
+                        handleSubmit={addOrEdit}
                     />
                 </Popup>
             </>

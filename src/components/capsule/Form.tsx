@@ -31,19 +31,22 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
             name:'Kapsula C3 / Pesona',
             img:'capsule_one.jpg',
             description:'capsule is highly effective for breathing and stuff',
+            color:'blue',
             options: [{text:'R-9',color:'bg-green-400'},{text:'G-9',color:'bg-red-300'}]
         },
         {
             id:2,
             name:'Kapsula I-90 / 1 Person',
             img:'capsule_two.jpg',
+            color:'red',
             description:'capsule is highly effective for breathing and stuff',
             options: [{text:'R-99',color:'bg-yellow-200'},{text:'G-99',color:'bg-red-300'}]
         },
         {
             id:3,
-            name:'Kapsula I-90 / 1 Person',
+            name:'Kapsula I-90 / 2 Person',
             img:'capsule_three.jpg',
+            color:'green',
             description:'capsule is highly effective for breathing and stuff',
             options: [{text:'R-999',color:'bg-orange-400'},{text:'G-999',color:'bg-red-300'}]
         }
@@ -67,6 +70,12 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
         capsule:"",
         client:"",
     });
+
+    const getColor = (capsule)=> {
+        if(capsule==='Kapsula I-90 / 2 Person') return 'orange'
+        if(capsule==='Kapsula I-90 / 1 Person') return 'yellow'
+        if(capsule==='Kapsula C3 / Pesona') return 'green'
+    }
     // const [availableHours,setAvailableHours] = useState([]);
 
     // const getEventsOnDate = (date)=>{
@@ -168,6 +177,7 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         title: state.capsule,
                         start: state.time,
                         end: scheduler.state.end.value,
+                        color: getColor(state.capsule),
                         client: state.client
                     });
                 }, 3000);

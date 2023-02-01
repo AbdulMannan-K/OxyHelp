@@ -1,6 +1,8 @@
 import { Scheduler } from "@aldabil/react-scheduler";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import CustomEditor from "./Form.tsx";
+import {AddBusinessTwoTone} from "@mui/icons-material";
+import {Button} from "@mui/material";
 
 const EVENTS = [
     {
@@ -71,8 +73,9 @@ const EVENTS = [
         ),
         end: new Date(new Date(new Date().setHours(14)).setMinutes(0)),
         admin_id: 2
-    }
+    },
 ];
+
 
 const week = {
     weekDays: [0, 1, 2, 3, 4, 5,6],
@@ -86,25 +89,46 @@ const week = {
 
  function WeekScheduler() {
 
-    useEffect(()=>{
-        console.log(EVENTS);
-    },EVENTS)
+    const [events,setEvents] = useState(EVENTS);
+
+    const addEvents = () => {
+        setEvents([...events,{event_id: 8,
+            title: "Event 8",
+            start: new Date(
+                new Date(new Date(new Date().setHours(15)).setMinutes(30)).setDate(
+                    new Date().getDate() - 2
+                )
+            ),
+            end: new Date(
+                new Date(new Date(new Date().setHours(16)).setMinutes(0)).setDate(
+                    new Date().getDate() - 2
+                )
+            ),
+            admin_id: 2,
+            color: "#900000"}])
+    }
+
+    useEffect(()=>{console.log(events)},[events])
 
 
-    return <Scheduler
-        hourFormat={24}
-        week={week}
-        // events={EVENTS}
-        customEditor={(scheduler) => <CustomEditor scheduler={scheduler} />}
-        viewerExtraComponent={(fields, event) => {
-            return (
-                <div>
-                    <p>Client: {event.client}</p>
-                    <p>Description: {event.description || "Nothing..."}</p>
-                </div>
-            );
-        }}
-    />
+    return <div>
+        <Button onClick={addEvents}>Add</Button>
+         <Scheduler
+            hourFormat={24}
+            week={week}
+            events={events}
+            customEditor={(scheduler) => <CustomEditor scheduler={scheduler} />}
+            viewerExtraComponent={(fields, event) => {
+                return (
+                    <div>
+                        <p>Client: {event.client}</p>
+                        <p>Description: {event.description || "Nothing..."}</p>
+                    </div>
+                );
+            }}
+        />
+    </div>
+
 }
 
 export {EVENTS,WeekScheduler}
