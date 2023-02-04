@@ -1,8 +1,12 @@
-import { Scheduler } from "@aldabil/react-scheduler";
-import {useCallback, useEffect, useState} from "react";
+import { Scheduler, useScheduler } from "@aldabil/react-scheduler";
+import React, {useCallback, useEffect, useState} from "react";
 import CustomEditor from "./Form.tsx";
 import {AddBusinessTwoTone} from "@mui/icons-material";
 import {Button} from "@mui/material";
+import UserForm from "../users/UserForm";
+import Popup from "../controls/Popup";
+import EventForm from "./EventForm";
+import {addEvent, getEvents} from "../../services/services";
 
 const EVENTS = [
     {
@@ -15,24 +19,21 @@ const EVENTS = [
         admin_id: [1, 2, 3, 4]
     },
     {
-        event_id: 2,
         title: "Event 2",
         start: new Date(new Date(new Date().setHours(10)).setMinutes(0)),
         end: new Date(new Date(new Date().setHours(12)).setMinutes(0)),
-        admin_id: 2,
+        admin_id:2 ,
         color: "#50b500"
     },
     {
-        event_id: 3,
         title: "Event 3",
-        start: new Date(new Date(new Date().setHours(11)).setMinutes(0)),
+        start: new Date(new Date(new Date().setHours(10)).setMinutes(0)),
         end: new Date(new Date(new Date().setHours(12)).setMinutes(0)),
-        admin_id: 1,
-        editable: false,
-        deletable: false
+        admin_id:2 ,
+        color: "#50b500"
+
     },
     {
-        event_id: 4,
         title: "Event 4",
         start: new Date(
             new Date(new Date(new Date().setHours(9)).setMinutes(30)).setDate(
@@ -61,7 +62,6 @@ const EVENTS = [
             )
         ),
         admin_id: 2,
-        editable: true
     },
     {
         event_id: 6,
@@ -87,48 +87,71 @@ const week = {
     disableGoToDay: false
 }
 
- function WeekScheduler() {
+function WeekScheduler() {
 
-    const [events,setEvents] = useState(EVENTS);
+     const {events, setEvents} = useScheduler();
+     const [openPopup, setOpenPopup] = useState(false);
 
-    const addEvents = () => {
-        setEvents([...events,{event_id: 8,
-            title: "Event 8",
-            start: new Date(
-                new Date(new Date(new Date().setHours(15)).setMinutes(30)).setDate(
-                    new Date().getDate() - 2
-                )
-            ),
-            end: new Date(
-                new Date(new Date(new Date().setHours(16)).setMinutes(0)).setDate(
-                    new Date().getDate() - 2
-                )
-            ),
-            admin_id: 2,
-            color: "#900000"}])
-    }
+     const addEvents = async (event, resetForm) => {
+         await addEvent(event, event.client);
+         setEvents([...events, event]);
+         resetForm();
+         setOpenPopup(false);
+     }
 
-    useEffect(()=>{console.log(events)},[events])
+     const addPrevEvent = async ()=>{
+         let gevents = ((await getEvents())).map(event => {
+             return {
+                 ...event,
+                 start: (new Date(event.start.seconds * 1000)),
+                 end: new Date(event.end.seconds * 1000),
+             }
+         })
+         setEvents(gevents);
+         console.log(gevents)
+         console.log(EVENTS)
+     }
 
+     const getAllEvents = async () => {
+         let gevents = ((await getEvents())).map(event => {
+             return {
+                 ...event,
+                 start: (new Date(event.start.seconds * 1000)),
+                 end: new Date(event.end.seconds * 1000),
+             }
+         })
+         setEvents(gevents);
+     }
 
-    return <div>
-        <Button onClick={addEvents}>Add</Button>
+     useEffect( () => {
+         getAllEvents();
+     },[0])
+
+     return <div>
+         <Popup
+             title="Events Form"
+             openPopup={openPopup}
+             setOpenPopup={setOpenPopup}
+         >
+             <EventForm
+                 addItem={addEvents}
+             />
+         </Popup>
+         <Button onClick={() => setOpenPopup(true)}>Add</Button>
          <Scheduler
-            hourFormat={24}
-            week={week}
-            events={events}
-            customEditor={(scheduler) => <CustomEditor scheduler={scheduler} />}
-            viewerExtraComponent={(fields, event) => {
-                return (
-                    <div>
-                        <p>Client: {event.client}</p>
-                        <p>Description: {event.description || "Nothing..."}</p>
-                    </div>
-                );
-            }}
-        />
-    </div>
+             hourFormat={24}
+             week={week}
+             customEditor={(scheduler) => <CustomEditor scheduler={scheduler}/>}
+             viewerExtraComponent={(fields, event) => {
+                 return (
+                     <div>
+                         <p>Client: {event.client}</p>
+                     </div>
+                 );
+             }}
+         />
+     </div>
 
-}
+ }
 
 export {EVENTS,WeekScheduler}

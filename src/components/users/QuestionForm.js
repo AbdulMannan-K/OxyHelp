@@ -1,6 +1,6 @@
-import {Form, useForm} from "./useForm";
+import {Form, useForm} from "../controls/useForm";
 import {Button, FormLabel, Grid, RadioGroup, TextField} from "@mui/material";
-import Input from "./controls/Input";
+import Input from "../controls/Input";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';

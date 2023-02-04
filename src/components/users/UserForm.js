@@ -1,7 +1,12 @@
 import {useEffect} from 'react';
-import {Form, useForm} from "./useForm";
+import {Form, useForm} from "../controls/useForm";
 import {Button, Grid, TextField} from "@mui/material";
-import Input from "./controls/Input";
+import Input from "../controls/Input";
+import {DesktopDatePicker} from "@mui/x-date-pickers/DesktopDatePicker";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
 
 const initialValues = {
     firstName:'',
@@ -12,9 +17,99 @@ const initialValues = {
     gender:'',
     email:'',
     questionnaire:[
-        {question:'Are you alright ?', answer:'yes'},
-        {question:'Are you fine ?', answer:'yes'}
-    ],
+        { question:'Infeksione të rrugëve të sipërme të frymëmarrjes (laringjit, sinusit, bronkit)', answer:'yes'},
+
+            { question:'Hipertensioni i pakontrolluar', answer:'yes'},
+
+                { question:'Emfizemë me mbajtje të CO2', answer:'yes'},
+
+                    { question:'Temperaturë e lartë e pakontrolluar e trupit', answer:'yes'},
+
+                    { question:'Cista ose bulla në mushkëri të dukshme në RTG të thjeshtë ose CT', answer:'yes'},
+
+                        { question:'Prania e një pompe epidurale për kontrollin e dhimbjes', answer:'yes'},
+
+                            { question:'Rinit alergjik', answer:'yes'},
+
+                                { question:'Prania e një stimuluesi kardiak', answer:'yes'},
+
+                                    { question:'Sëmundja kronike obstruktive pulmonare (COPD)', answer:'yes'},
+
+                                        { question:'Infarkt', answer:'yes'},
+
+                                            { question:'Operacionet e kaluara në krahëror', answer:'yes'},
+
+                                                { question:'Shtatzënia', answer:'yes'},
+
+                                                    { question:'Operacionet e kaluara ORL (hundë, gojë, fyt)', answer:'yes'},
+
+                                                        { question:'Rritja e tumorit', answer:'yes'},
+
+                                                            { question:'Epilepsi', answer:'yes'},
+
+                                                                { question:'Sferocitoza kongjenitale', answer:'yes'},
+
+                                                                    { question:'Neuriti optik', answer:'yes'},
+
+                                                                        { question:'Çrregullime të ritmit të zemrës', answer:'yes'},
+
+                                                                            { question:'Astma e pakontrolluar dhe/ose e kontrolluar', answer:'yes'},
+
+                                                                                { question:'Angina (dhimbje në zonën e zemrës)', answer:'yes'},
+
+                                                                                    { question:'Klaustrofobia', answer:'yes'},
+
+                                                                                        { question:'Alergji ndaj të ftohtit', answer:'yes'},
+
+                                                                                            { question:'Tromboza venoze ose sëmundjet kardiovaskulare', answer:'yes'},
+
+                                                                                                { question:'Hipotireoidizëm', answer:'yes'},
+
+                                                                                                    { question:'Polineuropatia', answer:'yes'},
+                                                                                                        { question:'Dëshironi të trajtoni ndonjë nga indikacionet e listuara?', answer:'yes'},
+                                                                                                            { question:'Pasojat e tronditjes ose dëmtimit të lehtë traumatik të trurit', answer:'yes'},
+
+                                                                                                                { question:'Psoriasis dhe dermatiti, dermatiti atopik, artriti dhe gjendje të ngjashme', answer:'yes'},
+
+                                                                                                                    { question:'Iskemia e sklerës', answer:'yes'},
+
+                                                                                                                        { question:'Sindromi i djegies', answer:'yes'},
+
+                                                                                                                            { question:'Pagjumësi', answer:'yes'},
+
+                                                                                                                                { question:'Goditje në tru', answer:'yes'},
+
+                                                                                                                                    { question:'Depresioni', answer:'yes'},
+
+                                                                                                                                        { question:'Mirëqenien e përgjithshme', answer:'yes'},
+
+                                                                                                                                            { question:'Presioni i lartë i gjakut (> 160/100 mm)', answer:'yes'},
+
+                                                                                                                                                { question:'Infarkt miokardi më pak se gjashtë muaj më parë (sulmi në zemër)', answer:'yes'},
+
+                                                                                                                                                    { question:'Sindroma e Raynaud', answer:'yes'},
+
+                                                                                                                                                        { question:'Iskemia e sklerës', answer:'yes'},
+
+                                                                                                                                                            { question:'Infeksion akut respirator', answer:'yes'},
+
+                                                                                                                                                                { question:'Infeksion akut të lëkurës, viral ose bakterial', answer:'yes'},
+
+                                                                                                                                                                    { question:'Shtatzënia', answer:'yes'},
+
+                                                                                                                                                                        { question:'Sëmundjet e traktit urinar', answer:'yes'},
+
+                                                                                                                                                                            { question:'Menstruacionet', answer:'yes'},
+
+                                                                                                                                                                                { question:'Temperatura e ngritur e trupit', answer:'yes'},
+
+                                                                                                                                                                                    { question:'Implantet e trupit', answer:'yes'},
+
+                                                                                                                                                                                        { question:'Tuberkulozi, formacionet malinje ose shërimi akut nga infeksioni', answer:'yes'},
+
+                                                                                                                                                                                            { question:'Anemi e rëndë', answer:'yes'},
+
+],
     history:[],
 }
 
@@ -81,22 +176,27 @@ function UserForm(props) {
                 onChange={handleInputChange}
                 error={errors.lastName}
             />
-                <Input
-                    name="gender"
-                    label="Gender"
-                    variant="outlined"
+                <FormControl fullWidth>
+                    <InputLabel>Gender</InputLabel>
+                <Select
                     value={values.gender}
+                    label="Gender"
+                    name="gender"
                     onChange={handleInputChange}
-                    error={errors.gender}
-                />
-                <Input
+                >
+                    <MenuItem value='Male'>Male</MenuItem>
+                    <MenuItem value='Female'>Female</MenuItem>
+                </Select>
+                </FormControl>
+                <DesktopDatePicker
                     name="birthDay"
                     label="Birth Day"
                     variant="outlined"
-                    value={values.birthDay}
-                    onChange={handleInputChange}
+                    value={new Date(values.birthDay)}
+                    onChange={(newVal)=>setValues({...values,birthDay:new Date(newVal).toLocaleDateString()})}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
                     error={errors.birthDay}
-                />
+                 />
                 <Input
                     name="phoneNumber"
                     label="Phone Number"

@@ -7,6 +7,7 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import Users from "./components/users/Users";
 import React from "react";
+import {createTheme, ThemeProvider} from "@mui/material";
 
 const router = createBrowserRouter([
     {
@@ -35,9 +36,24 @@ const router = createBrowserRouter([
     },
 ]);
 
+const { palette } = createTheme();
+const { augmentColor } = palette;
+const createColor = (mainColor) => augmentColor({ color: { main: mainColor } });
+
+const theme = createTheme({
+    palette: {
+        anger: createColor('#F40B27'),
+        apple: createColor('#5DBA40'),
+        steelBlue: createColor('#5C76B7'),
+        violet: createColor('#BC00A3'),
+    },
+});
+
 function App() {
   return (
-      <RouterProvider router={router} />
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
   );
 }
 

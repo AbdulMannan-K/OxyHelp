@@ -13,9 +13,9 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import HistoryIcon from '@mui/icons-material/History';
 import IconButton from "@mui/material/IconButton";
-import Popup from "./Popup";
+import Popup from "../controls/Popup";
 import useTable from "./useTable";
-import {addUser, getUsers} from "../../services/services";
+import {addUser, getEventsOfClients, getUsers} from "../../services/services";
 import QuestionForm from "./QuestionForm";
 
 const styles = {
@@ -59,8 +59,9 @@ export default function Users() {
     })
     const [openPopup, setOpenPopup] = useState(false)
     const [openQPopup, setOpenQPopup] = useState(false)
+    const [openHPopup,setOpenHPopup] = useState(false);
+    const [history,setHistory] = useState([]);
 
-    
     const getClients=async () => {
         setRecords(await getUsers())
     }
@@ -83,7 +84,7 @@ export default function Users() {
                 if (target.value === "")
                     return users;
                 else
-                    return users.filter(x => x.firstName.toLowerCase().includes(target.value))
+                    return users.filter(x => x.phoneNumber.toLowerCase().includes(target.value) || x.firstName.toLowerCase().includes(target.value) || x.lastName.toLowerCase().includes(target.value) || x.email.toLowerCase().includes(target.value))
             }
         })
     }
@@ -189,7 +190,10 @@ export default function Users() {
                                         <TableCell align='right'>
                                             <IconButton
                                                 color="primary"
-                                                onClick={() => {  }}
+                                                onClick={async () => {
+                                                    setHistory(await getEventsOfClients(user.history));
+                                                    setOpenHPopup(true);
+                                                }}
                                             ><HistoryIcon fontSize="small"/>
                                             </IconButton>
                                         </TableCell>
@@ -219,6 +223,62 @@ export default function Users() {
                         questions={recordForEdit}
                         handleSubmit={addOrEdit}
                     />
+                </Popup>
+                <Popup
+                    title="History"
+                    openPopup={openHPopup}
+                    setOpenPopup={setOpenHPopup}
+                >
+
+                    <div className="relative overflow-x-auto">
+                        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead
+                                className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" className="px-6 py-3">
+                                    Capsule
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Date
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Time
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Status
+                                </th>
+                                <th scope="col" className="px-6 py-3">
+                                    Employee
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {
+                                history.map(h=>
+                                    <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <th scope="row"
+                                            className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            {h.title}
+                                        </th>
+                                        <td className="px-6 py-4">
+                                            {new Date(h.start.seconds*1000).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {new Date(h.start.seconds*1000).toLocaleTimeString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {h.status}
+                                        </td>
+                                        <td>
+                                            {h.employee}
+                                        </td>
+                                    </tr>
+                                )
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+
                 </Popup>
             </>
         )

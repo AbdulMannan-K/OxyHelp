@@ -3,21 +3,18 @@ const capsules = [
         id:1,
         name:'Kapsula C3 / Pesona',
         img:'capsule_one.jpg',
-        description:'capsule is highly effective for breathing and stuff',
         options: [{text:'R-9',color:'bg-green-400'},{text:'G-9',color:'bg-red-300'}]
     },
     {
         id:2,
         name:'Kapsula I-90 / 1 Person',
         img:'capsule_two.jpg',
-        description:'capsule is highly effective for breathing and stuff',
         options: [{text:'R-99',color:'bg-yellow-200'},{text:'G-99',color:'bg-red-300'}]
     },
     {
         id:3,
         name:'Kapsula I-90 / 1 Person',
         img:'capsule_three.jpg',
-        description:'capsule is highly effective for breathing and stuff',
         options: [{text:'R-999',color:'bg-orange-400'},{text:'G-999',color:'bg-red-300'}]
     }
 ]
@@ -38,9 +35,6 @@ function CapsuleInfo (props) {
                                 <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                                     {capsule.name}
                                 </h5>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                                    {capsule.description}
-                                </p>
                             </div>
                             <div className="flex justify-center mb-2.5 gap-2 ">
                                 {

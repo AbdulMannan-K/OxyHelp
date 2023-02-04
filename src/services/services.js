@@ -1,4 +1,4 @@
-import { doc,setDoc,getDocs,collection } from "firebase/firestore";
+import { doc,setDoc,getDoc,addDoc,getDocs,collection } from "firebase/firestore";
 import {db} from './firebase';
 
 export const addUser = async (user) => {
@@ -11,9 +11,9 @@ export const addUser = async (user) => {
             birthDay:user.birthDay,
             city:user.city,
             questionnaire:user.questionnaire,
-            history:[],
+            history:user.history,
         });
-        console.log("Document written with ID: ", docRef);
+        // console.log("Document written with ID: ", docRef);
         // user.id=docRef;
         return await getUsers();
     } catch (e) {
@@ -21,17 +21,87 @@ export const addUser = async (user) => {
     }
 }
 
+export const addEvent = async (aEvent,user)=>{
+    try {
+        const docRef = await addDoc(collection(db, "events"), {
+            title:aEvent.title,
+            color:aEvent.color,
+            start:aEvent.start,
+            client:aEvent.client,
+            employee:aEvent.employee,
+            otherCients:aEvent.otherClients,
+            freeOfCost:aEvent.freeOfCost,
+            treatment:aEvent.treatment,
+            end:aEvent.end,
+        });
+        // console.log("Document written with ID: ", docRef);
+
+        const docc = doc(db, "clients", user);
+        const docSnap = await getDoc(docc);
+        let findUser = docSnap.data();
+        findUser= {...findUser,phoneNumber:docSnap.id};
+        findUser.history.push(docRef.id);
+        // console.log(docSnap);
+        await addUser(findUser);
+    } catch (e) {
+        console.error("Error adding documenst: ", e);
+    }
+}
+
+export const getEvents = async ()=> {
+    const querySnapshot = await getDocs(collection(db, "events"));
+    let events = [];
+    querySnapshot.forEach((doc) => {
+        // console.log(doc.id, " => ", doc.data());
+        events.push({
+            event_id:doc.id,
+            ...(doc.data()),
+        });
+    });
+    // console.log(events);
+    return events;
+}
+
+export const getEventsOnSpecificDate = async (date,capsule) => {
+    let events = await getEvents();
+    const dateString = (new Date(date)).toLocaleDateString();
+    console.log('date : '+dateString)
+    console.log(events)
+    let dateEvents = [];
+    for(let i =0 ; i < events.length; i++){
+        console.log(events[i].title+'      '+capsule)
+        if((new Date(events[i].start.seconds*1000)).toLocaleDateString()===dateString  &&  events[i].title===capsule){
+            dateEvents.push((new Date(events[i].start.seconds*1000)).toLocaleTimeString())
+        }
+    }
+    console.log(dateEvents)
+    return dateEvents;
+    // return events.filter(event => event.start.toLocaleDateString()===dateString);
+}
+
+export const getEventsOfClients = async (docs) => {
+    let events=[];
+    for(let i=0 ;i < docs.length ; i++){
+        const docRef = doc(db, "events", docs[i]);
+        const docSnap = await getDoc(docRef);
+        console.log(docSnap.data());
+        events.push(docSnap.data());
+    }
+    console.log(events);
+    return events;
+}
+
 export const getUsers = async ()=> {
     const querySnapshot = await getDocs(collection(db, "clients"));
-    console.log(typeof querySnapshot)
+    // console.log(typeof querySnapshot)
     let users = [];
     querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
+        // console.log(doc.id, " => ", doc.data());
         users.push({
             phoneNumber:doc.id,
             ...(doc.data()),
         })
     });
-    console.log(users);
+    // console.log(users);
     return users;
 }

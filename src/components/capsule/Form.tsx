@@ -10,19 +10,20 @@ import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import {addEvent, getUsers} from "../../services/services";
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import {EVENTS} from './Calendar'
 interface CustomEditorProps {
     scheduler: SchedulerHelpers;
 }
-
-const clients = [
-    {
-        name:'hello',
-        email:'hello@mail.com',
-        phone:'1432432423'
-    }
-]
+//
+// const clients = [
+//     {
+//         name:'hello',
+//         email:'hello@mail.com',
+//         phone:'1432432423'
+//     }
+// ]
 const CustomEditor = ({ scheduler }: CustomEditorProps) => {
 
     const initialCapsules = [
@@ -53,7 +54,15 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
     ];
 
     const [capsules,setCapsules] = useState(initialCapsules);
+    const [clients,setClients] = useState([]);
 
+    const getClients=async () => {
+        setClients(await getUsers())
+    }
+
+    useEffect(()=>{
+        getClients()
+    },[0])
 
     const event = scheduler.edited;
 
@@ -134,8 +143,8 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                 [name]: ""
             }
         })
-        // if(name==="date")
-        //     setAvailableHours(getAvailableHours(getEventsOnDate(value)));
+        // if(name==="capsule")
+        //     setAvailableHours(getAvailableHours(value,scheduler.state.start.value));
         setState((prev) => {
             return {
                 ...prev,
@@ -175,13 +184,16 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                     res({
                         event_id: event?.event_id || Math.random(),
                         title: state.capsule,
-                        start: state.time,
+                        start: scheduler.state.start.value,
                         end: scheduler.state.end.value,
                         color: getColor(state.capsule),
                         client: state.client
                     });
                 }, 3000);
             })) as ProcessedEvent;
+
+            console.log(added_updated_event)
+            await addEvent(added_updated_event,state.client);
 
             scheduler.onConfirm(added_updated_event, event ? "edit" : "create");
             scheduler.close();
@@ -194,13 +206,13 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
             <div style={{ padding: "1rem" }}>
                 <p>Load your custom form/fields</p>
 
-                <TimePicker
-                    label="Time"
-                    value={state.time}
-                    ampm={false}
-                    onChange={(e) => handleChange(e, "time")}
-                    renderInput={(params) => <TextField fullWidth sx={{ m: 1, minWidth: 120 }} {...params} />}
-                />
+                {/*<TimePicker*/}
+                {/*    label="Time"*/}
+                {/*    value={state.time}*/}
+                {/*    ampm={false}*/}
+                {/*    onChange={(e) => handleChange(e, "time")}*/}
+                {/*    renderInput={(params) => <TextField fullWidth sx={{ m: 1, minWidth: 120 }} {...params} />}*/}
+                {/*/>*/}
 
                 <FormControl fullWidth sx={{ m: 1, minWidth: 120 }} error={!!error.capsule}>
                     <InputLabel>Capsule</InputLabel>
@@ -234,7 +246,7 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         </MenuItem>
                         {
                             clients.map(client=>{
-                                return <MenuItem value={client.phone}>{client.phone}</MenuItem>
+                                return <MenuItem value={client.phoneNumber}>{client.phoneNumber}</MenuItem>
                             })
                         }
                     </Select>
