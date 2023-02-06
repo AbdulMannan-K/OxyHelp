@@ -22,6 +22,7 @@ const initialValues = {
     end:'',
     color:'',
     title:'',
+    status:'Reserved',
     employee:'',
     freeOfCost:'no',
     treatment:1,
@@ -65,8 +66,6 @@ function EventForm(props) {
             temp.lastName = fieldValues.start ? "" : "This field is required."
         if ('treatment' in fieldValues)
             temp.treatment = fieldValues.treatment ? "" : "This field is required."
-        if ('employee' in fieldValues)
-            temp.employee = fieldValues.employee ? "" : "This field is required."
         if ('title' in fieldValues)
             temp.city = fieldValues.title ? "" : "This field is required."
         setErrors({
@@ -102,7 +101,6 @@ function EventForm(props) {
 
             const index = arr.indexOf(i);
             if (index > -1) {
-                console.log('here')
                 arr.splice(index, 1);
             }
             setArr([...arr]);
@@ -135,18 +133,24 @@ function EventForm(props) {
         const capsule = values.title;
         console.log(capsule)
         const appointedSlots = await getEventsOnDate(date,capsule);
-        console.log('Appointed Slots')
+        console.log('appointed slots')
         console.log(appointedSlots)
         let freeSlots = [];
         for (let i = 7; i < 24; i++) {
+            let added=false;
             for(let j=0 ; j < appointedSlots.length ;j++){
-                console.log((appointedSlots[j].split(':'))[0])
                 if((appointedSlots[j].split(':'))[0]!=i){
-                    freeSlots.push(i);
+                    added=true;
+                }else{
+                    added=false;
+                    break;
                 }
             }
+            if(added)
+                freeSlots.push(i);
         }
-
+        console.log('free slots')
+        console.log(freeSlots)
         if(appointedSlots.length===0) {
             for (let i = 7; i < 24; i++) {
                 freeSlots.push(i);
@@ -165,9 +169,9 @@ function EventForm(props) {
     },[values.title,values.start])
 
     const getColor = (capsule)=> {
-        if(capsule==='Kapsula I-90 / 2 Person') return 'orange'
-        if(capsule==='Kapsula I-90 / 1 Person') return 'yellow'
-        if(capsule==='Kapsula C3 / Pesona') return 'green'
+        if(capsule==='Kapsula I-90 / 2 Person') return '#FB923C'
+        if(capsule==='Kapsula I-90 / 1 Person') return '#FEF08A'
+        if(capsule==='Kapsula C3 / Pesona') return '#4ADE80'
     }
 
     function handleSubmit(e){
@@ -177,10 +181,17 @@ function EventForm(props) {
         values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
         values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime+1)).setMinutes(0)).setSeconds(0));
         values.color=getColor(values.title);
-        if(validate()){
-            console.log(values);
-            props.addItem(values,resetForm);
+        if(values.title!=="" && values.treatment!==0 && values.client!=="" && values.start!==""){
+            console.log('here')
+            if(!checked && values.employee==='') {
+                alert('Some thing is not selected')
+            }else {
+                console.log(values);
+                if(checked) values.color='#FCA5A5'
+                props.addItem(values, resetForm);
+            }
         }else{
+            console.log('not here' + validate())
             alert('Some thing is not selected')
         }
     }
@@ -217,7 +228,7 @@ function EventForm(props) {
                 <FormControl fullWidth sx={{ minWidth: 120 }} error={!!errors.capsule}>
                     <InputLabel>Capsule</InputLabel>
                     <Select
-                        value={values.capsule}
+                        value={values.title}
                         label="Capsule"
                         name="title"
                         onChange={handleInputChange}

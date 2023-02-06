@@ -192,6 +192,7 @@ export default function Users() {
                                                 color="primary"
                                                 onClick={async () => {
                                                     setHistory(await getEventsOfClients(user.history));
+                                                    console.log(await getEventsOfClients(user.history))
                                                     setOpenHPopup(true);
                                                 }}
                                             ><HistoryIcon fontSize="small"/>

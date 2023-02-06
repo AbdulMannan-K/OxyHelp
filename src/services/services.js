@@ -29,7 +29,8 @@ export const addEvent = async (aEvent,user)=>{
             start:aEvent.start,
             client:aEvent.client,
             employee:aEvent.employee,
-            otherCients:aEvent.otherClients,
+            otherClients:aEvent.otherClients,
+            status:aEvent.status,
             freeOfCost:aEvent.freeOfCost,
             treatment:aEvent.treatment,
             end:aEvent.end,
@@ -89,6 +90,27 @@ export const getEventsOfClients = async (docs) => {
     }
     console.log(events);
     return events;
+}
+
+export const updateStatusToCompleted = async (aEvent) => {
+    try {
+        await setDoc(doc(db, "events", aEvent.event_id), {
+            title: aEvent.title,
+            color: aEvent.color,
+            start: aEvent.start,
+            client: aEvent.client,
+            employee: aEvent.employee,
+            otherClients: aEvent.otherClients,
+            status: 'Completed',
+            freeOfCost: aEvent.freeOfCost,
+            treatment: aEvent.treatment,
+            end: aEvent.end,
+        });
+        console.log('done');
+        return getEvents();
+    }catch (e) {
+        console.log(e);
+    }
 }
 
 export const getUsers = async ()=> {
