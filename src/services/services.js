@@ -1,4 +1,4 @@
-import { doc,setDoc,getDoc,addDoc,getDocs,collection } from "firebase/firestore";
+import { doc,setDoc,getDoc,addDoc,getDocs,collection,deleteDoc } from "firebase/firestore";
 import {db} from './firebase';
 
 export const addUser = async (user) => {
@@ -34,8 +34,10 @@ export const addEvent = async (aEvent,user)=>{
             freeOfCost:aEvent.freeOfCost,
             treatment:aEvent.treatment,
             end:aEvent.end,
+            deletable:true,
+            clientName: aEvent.clientName,
         });
-        // console.log("Document written with ID: ", docRef);
+        console.log("Document written with ID: ", docRef);
 
         const docc = doc(db, "clients", user);
         const docSnap = await getDoc(docc);
@@ -57,9 +59,12 @@ export const getEvents = async ()=> {
         events.push({
             event_id:doc.id,
             ...(doc.data()),
+            // deletable:(doc.data().deletable !== 'false'),
         });
     });
-    // console.log(events);
+    console.log('Events start')
+    console.log(events);
+    console.log('Events end')
     return events;
 }
 
@@ -92,7 +97,7 @@ export const getEventsOfClients = async (docs) => {
     return events;
 }
 
-export const updateStatusToCompleted = async (aEvent) => {
+export const updateStatus = async (aEvent,status) => {
     try {
         await setDoc(doc(db, "events", aEvent.event_id), {
             title: aEvent.title,
@@ -101,16 +106,22 @@ export const updateStatusToCompleted = async (aEvent) => {
             client: aEvent.client,
             employee: aEvent.employee,
             otherClients: aEvent.otherClients,
-            status: 'Completed',
+            status: status,
             freeOfCost: aEvent.freeOfCost,
             treatment: aEvent.treatment,
             end: aEvent.end,
+            clientName: aEvent.clientName,
+            deletable:(status !== 'Completed'),
         });
         console.log('done');
         return getEvents();
     }catch (e) {
         console.log(e);
     }
+}
+
+export const deleteEvent = async (event_id) => {
+    await deleteDoc(doc(db, "events", event_id));
 }
 
 export const getUsers = async ()=> {

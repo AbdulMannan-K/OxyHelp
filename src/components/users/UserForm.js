@@ -191,6 +191,7 @@ function UserForm(props) {
                 <DesktopDatePicker
                     name="birthDay"
                     label="Birth Day"
+                    inputFormat="DD/MM/YYYY"
                     variant="outlined"
                     value={new Date(values.birthDay)}
                     onChange={(newVal)=>setValues({...values,birthDay:new Date(newVal).toLocaleDateString()})}

@@ -7,9 +7,9 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 function CapsuleComponent() {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <div  className=" min-h-screen dark:bg-gray-800">
+            <div  className=" min-h-screen  dark:bg-gray-800">
                 <NavBar></NavBar>
-                <div className="container flex flex-col gap-4">
+                <div className=" container flex flex-col gap-4">
                     <CapsuleInfo/>
                     <WeekScheduler/>
                 </div>

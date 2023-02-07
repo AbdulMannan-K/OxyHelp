@@ -22,32 +22,27 @@ const capsules = [
 function CapsuleInfo (props) {
 
     return(
-        <div className="flex  gap-8">
+        <div className="flex md:flex-col gap-8">
             {
                 capsules.map(capsule=>
-                    <a href="src/components#"
-                       className="flex flex-col h-44 items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                    <div
+                       className="flex flex-row items-center  bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
                         <img
                             className="object-cover w-full rounded-t-lg min-h-full md:h-auto md:w-2/5 md:rounded-none md:rounded-l-lg"
                             src={`${capsule.img}`} alt=""/>
-                        <div className="">
-                            <div className="flex flex-col justify-between p-4 leading-normal">
-                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                    {capsule.name}
-                                </h5>
+                            <div className="w-80 flex justify-center">
+                                <div className="flex justify-center gap-2 ">
+                                    {
+                                        capsule.options.map(option=>{
+                                            return(
+                                                <p className={`${option.color} text-3xl  font-bold rounded p-3 font-normal text-gray-700 dark:text-white`}>
+                                                    {option.text}
+                                                </p>);
+                                        })
+                                    }
+                                </div>
                             </div>
-                            <div className="flex justify-center mb-2.5 gap-2 ">
-                                {
-                                    capsule.options.map(option=>{
-                                        return(
-                                            <p className={`${option.color} text-lg font-bold rounded mb-3 p-2 font-normal text-gray-700 dark:text-white`}>
-                                                {option.text}
-                                            </p>);
-                                    })
-                                }
-                            </div>
-                        </div>
-                    </a>
+                    </div>
                 )
             }
         </div>

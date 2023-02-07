@@ -1,13 +1,13 @@
 import {useEffect, useState} from 'react';
 import {Form, useForm} from "../controls/useForm";
-import {Button, Grid, Switch, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {Autocomplete, Button, Grid, Switch, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import Input from "../controls/Input";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
-import {addEvent, getEventsOnSpecificDate, getUsers} from "../../services/services";
+import {addEvent, getEvents, getEventsOnSpecificDate, getUsers} from "../../services/services";
 import {DesktopDatePicker} from "@mui/x-date-pickers/DesktopDatePicker";
 import {styled} from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
@@ -19,13 +19,16 @@ const initialValues = {
     client:'',
     otherClients:[],
     start:new Date(),
+    clientInfo:{},
     end:'',
     color:'',
     title:'',
     status:'Reserved',
+    clientName:'',
     employee:'',
     freeOfCost:'no',
     treatment:1,
+    deletable:true,
 }
 
 const capsules = [
@@ -35,6 +38,7 @@ const capsules = [
         img:'capsule_one.jpg',
         description:'capsule is highly effective for breathing and stuff',
         color:'blue',
+        capsuleName:'Kapsula 9',
         options: [{text:'R-9',color:'bg-green-400'},{text:'G-9',color:'bg-red-300'}]
     },
     {
@@ -43,6 +47,7 @@ const capsules = [
         img:'capsule_two.jpg',
         color:'red',
         description:'capsule is highly effective for breathing and stuff',
+        capsuleName:'Kapsula 99',
         options: [{text:'R-99',color:'bg-yellow-200'},{text:'G-99',color:'bg-red-300'}]
     },
     {
@@ -50,6 +55,7 @@ const capsules = [
         name:'Kapsula I-90 / 2 Person',
         img:'capsule_three.jpg',
         color:'green',
+        capsuleName:'Kapsula 999',
         description:'capsule is highly effective for breathing and stuff',
         options: [{text:'R-999',color:'bg-orange-400'},{text:'G-999',color:'bg-red-300'}]
     }
@@ -169,25 +175,30 @@ function EventForm(props) {
     },[values.title,values.start])
 
     const getColor = (capsule)=> {
-        if(capsule==='Kapsula I-90 / 2 Person') return '#FB923C'
-        if(capsule==='Kapsula I-90 / 1 Person') return '#FEF08A'
-        if(capsule==='Kapsula C3 / Pesona') return '#4ADE80'
+        if(capsule==='Kapsula 999') return '#FB923C'
+        if(capsule==='Kapsula 99') return '#FEF08A'
+        if(capsule==='Kapsula 9') return '#4ADE80'
     }
 
     function handleSubmit(e){
+        console.log(clients.find(client=>client.phoneNumber===values.client));
         e.preventDefault();
         values.otherClients = arr.map(i=>i.value);
         values.freeOfCost = checked?'yes':'no';
         values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
         values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime+1)).setMinutes(0)).setSeconds(0));
+        const client = clients.find(client => client.phoneNumber === values.client);
+        values.clientName = client.firstName+' '+client.lastName ;
         values.color=getColor(values.title);
-        if(values.title!=="" && values.treatment!==0 && values.client!=="" && values.start!==""){
+        console.log('client test : ' + values.client)
+        if(selectedTime!==0 && values.title!=="" && values.treatment!==0 && values.client!=="" && values.start!==""){
             console.log('here')
             if(!checked && values.employee==='') {
                 alert('Some thing is not selected')
             }else {
                 console.log(values);
                 if(checked) values.color='#FCA5A5'
+                console.log(values)
                 props.addItem(values, resetForm);
             }
         }else{
@@ -239,7 +250,7 @@ function EventForm(props) {
                         </MenuItem>
                         {
                             capsules.map(capsule=>{
-                                return <MenuItem value={capsule.name}>{capsule.name}</MenuItem>
+                                return <MenuItem value={capsule.capsuleName}>{capsule.capsuleName}</MenuItem>
                             })
                         }
                     </Select>
@@ -250,6 +261,7 @@ function EventForm(props) {
                     name="date"
                     label="Date"
                     variant="outlined"
+                    inputFormat="DD/MM/YYYY"
                     value={values.start}
                     onChange={(e)=>setValues({...values,'start':e})}
                     renderInput={(params) => <TextField fullWidth {...params} />}
@@ -267,7 +279,6 @@ function EventForm(props) {
                 {/*    }*/}
                 {/*</div>*/}
 
-                <div className="">
                 <StyledToggleButtonGroup
                     size="small"
                     color="primary"
@@ -284,32 +295,27 @@ function EventForm(props) {
                     {/*<ToggleButton value="left" aria-label="left aligned">*/}
                     {/*</ToggleButton>*/}
                 </StyledToggleButtonGroup>
-                </div >
 
                 <div className="flex flex-row">
-                    <FormControl fullWidth sx={{ minWidth: 120 }} error={!!errors.client}>
-                        <InputLabel>Client</InputLabel>
-                        <Select
-                            value={values.client}
-                            label="Client"
-                            name="client"
-                            onChange={handleInputChange}
-                        >
-                            <MenuItem value="">
-                                <em>None</em>
-                            </MenuItem>
-                            {
-                                clients.map(client=>{
-                                    return <MenuItem value={client.phoneNumber}>{client.phoneNumber}</MenuItem>
-                                })
-                            }
-                        </Select>
-                        <FormHelperText>{errors.client}</FormHelperText>
-                    </FormControl>
+                    <Autocomplete
+                        disablePortal
+                        name="client"
+                        onInputChange={(e,newVal)=>setValues({...values,client:newVal})}
+                        inputValue={values.client}
+                        fullWidth={true}
+                        options={
+                            clients.map(client=>{
+                                return {label:client.phoneNumber}
+                            })
+                        }
+                        renderInput={(params) => <Input fullWidth {...params} label="Client" />}
+                    />
                     <IconButton onClick={addInput}>
                         <AddIcon/>
                     </IconButton>
                 </div>
+
+
 
                 {arr.map((item, i) => {
                     return (
@@ -329,15 +335,23 @@ function EventForm(props) {
                     );
                 })}
 
-                <Input
-                    onChange={handleInputChange}
-                    value={values.treatment}
-                    fullWidth
-                    label="Treatment"
-                    type="number"
-                    name="treatment"
-                    variant="outlined"
-                />
+                <div className="flex items-center">
+                    <p className="pb-1">Treatment : </p>
+                    <StyledToggleButtonGroup
+                        size="small"
+                        color="primary"
+                        value={values.treatment}
+                        exclusive
+                        onChange={(event,newValue)=>setValues({...values,treatment:newValue})}
+                        aria-label="text alignment"
+                    >
+                        <ToggleButton value={1}>{1}</ToggleButton>
+                        <ToggleButton value={5}>{5}</ToggleButton>
+                        <ToggleButton value={10}>{10}</ToggleButton>
+                        <ToggleButton value={15}>{15}</ToggleButton>
+                        <ToggleButton value={20}>{20}</ToggleButton>
+                    </StyledToggleButtonGroup>
+                </div>
 
                 <Input
                     onChange={handleInputChange}

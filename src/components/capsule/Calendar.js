@@ -4,7 +4,8 @@ import {AddBusinessTwoTone} from "@mui/icons-material";
 import {Button, Tooltip} from "@mui/material";
 import Popup from "../controls/Popup";
 import EventForm from "./EventForm";
-import {addEvent, getEvents, updateStatusToCompleted} from "../../services/services";
+import {addEvent, deleteEvent, getEvents, updateStatus} from "../../services/services";
+import CustomEditor from "./Form.tsx";
 
 const week = {
     weekDays: [0, 1, 2, 3, 4, 5,6],
@@ -20,10 +21,7 @@ const week = {
         const disabled = day === 0;
         // const restProps = disabled ? {} : props;
         return (
-            <div className={`min-h-full ${disabled?'bg-pink-100':''} flex flex-row gap-2`}>
-                <div className=" bg-red-600"></div>
-                {/*<div></div>*/}
-                {/*<div></div>*/}
+            <div id="weekRender" className={`mt-0 p-0  min-h-full ${disabled?'bg-pink-100':''}`}>
             </div>
         );
     }
@@ -96,7 +94,17 @@ function WeekScheduler() {
      }
 
      const updateEvent = async (event)=>{
-         await updateStatusToCompleted(event);
+         await updateStatus(event,'Completed');
+         getAllEvents();
+     }
+
+     const cancelEvent = async (event)=>{
+         await updateStatus(event,'Canceled');
+         getAllEvents();
+     }
+
+     const deleteE = async (id)=>{
+         await deleteEvent(id);
          getAllEvents();
      }
 
@@ -104,7 +112,8 @@ function WeekScheduler() {
          getAllEvents();
      },[0])
 
-     return <div>
+     return (
+    <div>
          <Popup
              title="Events Form"
              openPopup={openPopup}
@@ -114,46 +123,73 @@ function WeekScheduler() {
                  addItem={addEvents}
              />
          </Popup>
-         <Button onClick={() => setOpenPopup(true)}>Add</Button>
+        <button type="button"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                onClick={()=> setOpenPopup(true)}
+        >Add Booking
+        </button>
          <Scheduler
              hourFormat={24}
              week={week}
              day={day}
              month={month}
+             // editable={false}
+             customEditor={(scheduler) => <CustomEditor scheduler={scheduler}/>}
+             onDelete={(id)=>deleteE(id)}
              viewerExtraComponent={(fields, event) => {
                  return (
                      <div>
-                         <p>Client: {event.client}</p>
-                         {
-                             event.otherClients.map(client=> {
-                                 return <p>{client}</p>
-                             })
-                         }
-                         <Button onClick={()=>updateEvent(event)}>Completed</Button>
+                         <div className="mt-4">
+                             <p>Client Name: {event.clientName} </p>
+                             <p>Client Phone: {event.client}</p>
+                             {event.otherClients.length!==0?<p>Other Clients: </p>:<></>}
+                             {
+                                 event.otherClients.map(client=> {
+                                     return <p>{client}</p>
+                                 })
+                             }
+                         </div>
+                         <div className="mt-4">
+                             <button type="button"
+                                     disabled={event.status==='Canceled'}
+                                     className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:opacity-30"
+                                     onClick={()=> updateEvent(event)}
+                             >Completed
+                             </button>
+                             <button type="button"
+                                     disabled={event.status==='Completed'}
+                                     className=":outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 disabled:opacity-30"
+                                    onClick={()=> cancelEvent(event)}
+                             >Cancel
+                             </button>
+                         </div>
                      </div>
                  );
              }}
              eventRenderer={(event) => {
                      return (
+                         <div id="eventRender">
                          <Tooltip title={
                              <Fragment>
                                  <p>{event.title}</p>
-                                 <p>{event.client}</p>
+                                 <p>{event.client}{event.otherClients.length!==0?` , ${event.otherClients.length} more`:''}</p>
                              </Fragment>
                          }>
                              <div className="flex flex-col text-black">
-                                 <div className={`h-6 ${event.status==='Completed'?'bg-green-200':'bg-gray-200'}`}>
-                                     {(new Date(event.start)).toLocaleDateString()}
+                                 <div className={`h-6 ${event.status==='Completed'?'bg-green-200': event.status === 'Canceled' ? 'bg-red-400' : 'bg-gray-200'}`}>
+                                     {event.title.split(" ")[1]}
                                  </div>
                                  <div className="text-sm">
-                                     {event.title}
+                                     {event.clientName}{event.otherClients.length!==0?` , ${event.otherClients.length} more`:''}
                                  </div>
                              </div>
                          </Tooltip>
+                         </div>
+
                      );
              }}
          />
-     </div>
+     </div>)
 
  }
 
