@@ -182,7 +182,7 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         end:event.end,
                         color:event.color,
                         title:event.title,
-                        status:event.status,
+                        status:'Reserved',
                         clientName:event.clientName,
                         employee:event.employee,
                         freeOfCost:event.freeOfCost,

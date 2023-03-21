@@ -7,7 +7,12 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
-import {addEvent, getEvents, getEventsOnSpecificDate, getUsers} from "../../services/services";
+import {
+    getEvent,
+    getEventsOnSpecificDate,
+    getTreatment,
+    getUsers
+} from "../../services/services";
 import {DesktopDatePicker} from "@mui/x-date-pickers/DesktopDatePicker";
 import {styled} from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
@@ -28,7 +33,9 @@ const initialValues = {
     employee:'',
     freeOfCost:'no',
     treatment:1,
+    repTreatment:'',
     deletable:true,
+    comment:'',
 }
 
 const capsules = [
@@ -86,6 +93,7 @@ function EventForm(props) {
     const [clients,setClients] = useState([]);
     const [availableHours,setAvailableHours] = useState([]);
     const [selectedTime,setSelectedTime] = useState(0);
+    const [repTreatment,setRepTreatment] = useState(null);
     const [arr, setArr] = useState([]);
     const [checked,setChecked] = useState(false);
 
@@ -129,25 +137,37 @@ function EventForm(props) {
         setClients(await getUsers())
     }
 
-    const getEventsOnDate = async (date,capsule) => {
+    const getEventsOnDate = async (date,capsule,client) => {
         // console.log('Hello : ' + await getEventsOnSpecificDate(date))
-        return (await getEventsOnSpecificDate(date,capsule))
+        return (await getEventsOnSpecificDate(date,capsule,client))
     }
 
     const getAvailableHours = async () => {
         const date = (new Date(values.start)).toLocaleDateString();
         const capsule = values.title;
+        const client = values.client.split(" ")[0]
         console.log(capsule)
-        const appointedSlots = await getEventsOnDate(date,capsule);
+        const appointedSlots = await getEventsOnDate(date,capsule,client);
+        const currentTime = (new Date().toLocaleDateString())===(new Date(values.start)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
+        console.log('Current Time : ' + currentTime);
+        console.log( (new Date().toLocaleDateString()))
+        console.log((new Date(values.start)).toLocaleString())
         console.log('appointed slots')
         console.log(appointedSlots)
         let freeSlots = [];
-        for (let i = 7; i < 24; i++) {
+        for (let i = currentTime; i < 23; i++) {
             let added=false;
             for(let j=0 ; j < appointedSlots.length ;j++){
-                if((appointedSlots[j].split(':'))[0]!=i){
+                // here we have to check pm am also
+                let time = (appointedSlots[j].split(':'))[0];
+                if(appointedSlots[j].slice(-2)=='PM'){
+                    time=parseInt(time)+12;
+                    console.log('here here here')
+                }
+                if(time!=i){
                     added=true;
                 }else{
+                    console.log('AND Appoineted slot j : '+(appointedSlots[j].split(':'))[0] +"  "+ i)
                     added=false;
                     break;
                 }
@@ -158,7 +178,7 @@ function EventForm(props) {
         console.log('free slots')
         console.log(freeSlots)
         if(appointedSlots.length===0) {
-            for (let i = 7; i < 24; i++) {
+            for (let i = currentTime; i < 24; i++) {
                 freeSlots.push(i);
             }
         }
@@ -180,31 +200,82 @@ function EventForm(props) {
         if(capsule==='Kapsula 9') return '#4ADE80'
     }
 
-    function handleSubmit(e){
-        console.log(clients.find(client=>client.phoneNumber===values.client));
-        e.preventDefault();
-        values.otherClients = arr.map(i=>i.value);
-        values.freeOfCost = checked?'yes':'no';
-        values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-        values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime+1)).setMinutes(0)).setSeconds(0));
-        const client = clients.find(client => client.phoneNumber === values.client);
-        values.clientName = client.firstName+' '+client.lastName ;
-        values.color=getColor(values.title);
-        console.log('client test : ' + values.client)
-        if(selectedTime!==0 && values.title!=="" && values.treatment!==0 && values.client!=="" && values.start!==""){
-            console.log('here')
-            if(!checked && values.employee==='') {
-                alert('Some thing is not selected')
-            }else {
-                console.log(values);
-                if(checked) values.color='#FCA5A5'
-                console.log(values)
-                props.addItem(values, resetForm);
+    async function handleTreatment(e) {
+
+        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
+        console.log(client);
+        for (let i = 0; i < client.history.length; i++) {
+            console.log('hello')
+            const treatment = await getTreatment(client.history[i])
+            if (treatment.total!==1 && treatment.total !== treatment.completed) {
+                setRepTreatment(treatment);
+                const event = await getEvent(treatment.events[0]);
+                let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
+                time=time.slice(-2)=='PM'?parseInt(time)+12:time;
+                setSelectedTime(parseInt(time))
+                console.log('rep event ' + time);
+                console.log('rep treatment : ' + client.history[i]);
+                break;
+            } else {
+                setRepTreatment(null);
             }
-        }else{
+        }
+
+
+    }
+
+    // if treatment selected means new treatment
+    // if repeat button pressed means old treatment that is not yet completed
+
+    async function handleSubmit(e) {
+        console.log(clients.find(client => client.phoneNumber === values.client));
+        e.preventDefault();
+        let c= values.client;
+        setValues({...values,client:c.split(' ')})
+        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
+
+        values.otherClients = arr.map(i => i.value);
+        values.freeOfCost = checked ? 'yes' : 'no';
+        values.clientName = client.firstName + ' ' + client.lastName;
+        values.color = getColor(values.title);
+
+
+        let newTreatment=false;
+        // if(repTreatment){
+        //     console.log('totally not here')
+        //     values.repTreatment= repTreatment;
+        //     newTreatment=false;
+        // }
+        if(values.treatment===1) newTreatment=true;
+
+        console.log('client test : ' + values.client)
+        values.client = values.client.split(" ")[0]
+        if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
+            console.log('here')
+            if (!checked && values.employee === '') {
+                alert('Some thing is not selected')
+            } else {
+                console.log(values);
+                if (checked) values.color = '#FCA5A5'
+                console.log(values)
+
+                for(let i=0 ; i< values.treatment ; i++){
+                    values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                    values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                    addEvent(values,newTreatment);
+                    values.start.setDate(values.start.getDate()+1)
+                }
+
+                // props.addItem(values, resetForm,newTreatment);
+            }
+        } else {
             console.log('not here' + validate())
             alert('Some thing is not selected')
         }
+    }
+
+    const addEvent=(values,newTreatment)=>{
+        props.addItem(values,resetForm,newTreatment)
     }
 
 
@@ -217,6 +288,8 @@ function EventForm(props) {
 
 
     const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+        alignItems: 'center',
+        justifyContent: 'center',
         '& .MuiToggleButtonGroup-grouped': {
             margin: theme.spacing(0.5),
             border: 0,
@@ -257,10 +330,30 @@ function EventForm(props) {
                     <FormHelperText>{errors.capsule}</FormHelperText>
                 </FormControl>
 
+                <div className="flex flex-row">
+                    <Autocomplete
+                        disablePortal
+                        name="client"
+                        onInputChange={(e,newVal)=>setValues({...values,client:newVal})}
+                        inputValue={values.client}
+                        fullWidth={true}
+                        options={
+                            clients.map(client=>{
+                                return {label:client.phoneNumber+'  |  '+client.firstName+client.lastName}
+                            })
+                        }
+                        renderInput={(params) => <Input fullWidth {...params} label="Client" />}
+                    />
+                    {values.title==='Kapsula 9'?<IconButton onClick={addInput}>
+                        <AddIcon/>
+                    </IconButton>:undefined}
+                </div>
+
                 <DesktopDatePicker
                     name="date"
                     label="Date"
                     variant="outlined"
+                    minDate={new Date()}
                     inputFormat="DD/MM/YYYY"
                     value={values.start}
                     onChange={(e)=>setValues({...values,'start':e})}
@@ -296,25 +389,6 @@ function EventForm(props) {
                     {/*</ToggleButton>*/}
                 </StyledToggleButtonGroup>
 
-                <div className="flex flex-row">
-                    <Autocomplete
-                        disablePortal
-                        name="client"
-                        onInputChange={(e,newVal)=>setValues({...values,client:newVal})}
-                        inputValue={values.client}
-                        fullWidth={true}
-                        options={
-                            clients.map(client=>{
-                                return {label:client.phoneNumber}
-                            })
-                        }
-                        renderInput={(params) => <Input fullWidth {...params} label="Client" />}
-                    />
-                    <IconButton onClick={addInput}>
-                        <AddIcon/>
-                    </IconButton>
-                </div>
-
 
 
                 {arr.map((item, i) => {
@@ -342,7 +416,10 @@ function EventForm(props) {
                         color="primary"
                         value={values.treatment}
                         exclusive
-                        onChange={(event,newValue)=>setValues({...values,treatment:newValue})}
+                        onChange={(event,newValue)=> {
+                            setValues({...values, treatment: newValue});
+                            setRepTreatment(null);
+                        }}
                         aria-label="text alignment"
                     >
                         <ToggleButton value={1}>{1}</ToggleButton>
@@ -352,6 +429,8 @@ function EventForm(props) {
                         <ToggleButton value={20}>{20}</ToggleButton>
                     </StyledToggleButtonGroup>
                 </div>
+
+                {/*{<Button>Repeat</Button>}*/}
 
                 <Input
                     onChange={handleInputChange}
@@ -365,13 +444,27 @@ function EventForm(props) {
 
                 <FormControlLabel control={<Switch checked={checked} onChange={(e)=>setChecked(e.target.checked)} />} label="Free Of Cost" />
 
+                <Input
+                    onChange={handleInputChange}
+                    value={values.comment}
+                    fullWidth
+                    label="Comment"
+                    name="comment"
+                    variant="outlined"
+                />
+
+                {repTreatment?<p>You have done {repTreatment.completed} treatments out of {repTreatment.total}</p>:<></>}
 
                 <div style={{display:'block'}}>
-                    <Button
+                    <button
                         type="submit"
                         onClick={handleSubmit}
-                        styles={{margin:"5px"}}
-                    >Submit</Button>
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    >Submit</button>
+                    <button
+                        onClick={handleTreatment}
+                        className="text-white bg-emerald-600 hover:bg-emerald-800 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    >Repeat</button>
                 </div>
             </div>
         </Form>

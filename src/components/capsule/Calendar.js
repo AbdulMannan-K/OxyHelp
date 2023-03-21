@@ -1,10 +1,20 @@
 import { Scheduler, useScheduler } from "@aldabil/react-scheduler";
 import React, {Fragment, useCallback, useEffect, useState} from "react";
 import {AddBusinessTwoTone} from "@mui/icons-material";
-import {Button, Tooltip} from "@mui/material";
+import {Button, ToggleButtonGroup, Tooltip} from "@mui/material";
 import Popup from "../controls/Popup";
 import EventForm from "./EventForm";
-import {addEvent, deleteEvent, getEvents, updateStatus} from "../../services/services";
+import {
+    addEvent,
+    addUser,
+    deleteEvent,
+    getEvents,
+    getTreatment,
+    getUsers,
+    updateStatus,
+    updateTreatment
+} from "../../services/services";
+import {useNavigate} from "react-router-dom";
 import CustomEditor from "./Form.tsx";
 
 const week = {
@@ -71,11 +81,12 @@ const month = {
 
 function WeekScheduler() {
 
-     const {events, setEvents} = useScheduler();
-     const [openPopup, setOpenPopup] = useState(false);
+    const {events, setEvents} = useScheduler();
+    const [openPopup, setOpenPopup] = useState(false);
+    const navigate = useNavigate();
 
-     const addEvents = async (event, resetForm) => {
-         await addEvent(event, event.client);
+     const addEvents = async (event, resetForm,newTreatment) => {
+         await addEvent(event, event.client,newTreatment);
          setEvents([...events, event]);
          resetForm();
          setOpenPopup(false);
@@ -94,6 +105,25 @@ function WeekScheduler() {
      }
 
      const updateEvent = async (event)=>{
+         const clients = await getUsers();
+         console.log('client : ')
+         console.log(clients);
+         const client = clients.find(client => client.phoneNumber === event.client);
+         // console.log('client : : : '+client);
+         console.log("client");
+         console.log(client);
+         for(let i=0 ; i < client.history.length ; i++){
+             const treatment = await getTreatment(client.history[i])
+             console.log(treatment)
+             for(let j=0 ; j < treatment.events.length ;j++){
+                 if(treatment.events[j]===event.event_id){
+                     console.log('hereh herhe ehrhe rhe')
+                     treatment.completed++;
+                     await updateTreatment(treatment);
+                     break;
+                 }
+             }
+         }
          await updateStatus(event,'Completed');
          getAllEvents();
      }
@@ -112,6 +142,11 @@ function WeekScheduler() {
          getAllEvents();
      },[0])
 
+    useEffect(() => {
+        const user = sessionStorage.getItem('Auth Token');
+        if(!user) navigate("/login")
+    }, [0]);
+
      return (
     <div>
          <Popup
@@ -123,16 +158,30 @@ function WeekScheduler() {
                  addItem={addEvents}
              />
          </Popup>
-        <button type="button"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                onClick={()=> setOpenPopup(true)}
-        >Add Booking
-        </button>
-         <Scheduler
+        <div className="flex justify-between ">
+            <button type="button"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    onClick={()=> setOpenPopup(true)}
+            >Add Booking
+            </button>
+            <div className="flex gap-4 justify-center bg-blue-700 hover:bg-blue-800 w-96 rounded-lg px-5 py-2.5 mb-2">
+                <li className="text-green-400">
+                    Completed
+                </li>
+                <li className="text-gray-500">
+                    Reserved
+                </li>
+                <li className="text-red-600">
+                    Canceled
+                </li>
+            </div>
+        </div>
+        <Scheduler
              hourFormat={24}
              week={week}
              day={day}
              month={month}
+             width={200}
              // editable={false}
              customEditor={(scheduler) => <CustomEditor scheduler={scheduler}/>}
              onDelete={(id)=>deleteE(id)}
@@ -148,6 +197,7 @@ function WeekScheduler() {
                                      return <p>{client}</p>
                                  })
                              }
+                             <p>Treatment Number: {event.treatmentNumber}/{event.treatment}</p>
                          </div>
                          <div className="mt-4">
                              <button type="button"
@@ -168,7 +218,7 @@ function WeekScheduler() {
              }}
              eventRenderer={(event) => {
                      return (
-                         <div id="eventRender">
+                         <div id="eventRender" className="render-event-on-calender">
                          <Tooltip title={
                              <Fragment>
                                  <p>{event.title}</p>

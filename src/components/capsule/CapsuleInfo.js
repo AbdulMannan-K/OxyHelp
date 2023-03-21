@@ -22,7 +22,8 @@ const capsules = [
 function CapsuleInfo (props) {
 
     return(
-        <div className="flex md:flex-col gap-8">
+        <div className="relative  top-0  z-10">
+            <div className="flex lg:flex-row md:flex-col gap-8 sticky">
             {
                 capsules.map(capsule=>
                     <div
@@ -45,6 +46,7 @@ function CapsuleInfo (props) {
                     </div>
                 )
             }
+            </div>
         </div>
     );
 }

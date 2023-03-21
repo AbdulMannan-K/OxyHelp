@@ -1,10 +1,14 @@
 import React from 'react';
+import {useNavigate} from "react-router-dom";
+import {getAuth} from "firebase/auth";
 function NavBar(props) {
+    const navigate = useNavigate();
+
     return (
 
-        <nav className=" bg-white shadow border-gray-200 px-2 mb-10 sm:px-4 py-2.5 rounded dark:bg-gray-900">
+        <nav className=" bg-white shadow border-gray-200 px-2 mb-10 sm:px-4 py-2.5 rounded dark:bg-gray-900 ">
             <div className="container flex flex-wrap items-center justify-between mx-auto">
-                <a href='http://localhost:3000/capsules' className="flex items-center">
+                <a onClick={()=>navigate('/capsules')} className="flex items-center">
                     <img src="Oxyhelp_Logo.png" className="h-6 mr-3 sm:h-9"
                          alt="Oxyhelp Logo"/>
                 </a>
@@ -22,9 +26,27 @@ function NavBar(props) {
                 <div className="hidden w-full md:block md:w-auto" id="navbar-default">
                     <ul className="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
                         <li>
-                            <a href='http://localhost:3000/clients'
-                               className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
+                            <a
+                               onClick={()=>navigate('/clients')}
+                               className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white cursor-pointer"
                                aria-current="page">Clients</a>
+                        </li>
+                        <li>
+                            <a onClick={()=>navigate('/employees')}
+                               className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white  cursor-pointer"
+                               aria-current="page">Employees</a>
+                        </li>
+                        <li>
+                            <a href=''
+                               onClick={()=>{
+                                sessionStorage.removeItem('Auth Token');
+                                const auth = getAuth();
+                                auth.signOut();
+                                navigate('/login')
+                               }
+                               }
+                               className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white"
+                               aria-current="page">Logout</a>
                         </li>
                     </ul>
                 </div>

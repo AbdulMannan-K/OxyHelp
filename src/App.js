@@ -8,6 +8,8 @@ import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import Users from "./components/users/Users";
 import React from "react";
 import {createTheme, ThemeProvider} from "@mui/material";
+import Employees from "./components/employees/employees";
+import Login from "./components/auth/login"
 
 const router = createBrowserRouter([
     {
@@ -30,6 +32,18 @@ const router = createBrowserRouter([
                 path:"/clients",
                 element: <div className="container">
                     <Users/>
+                </div>
+            },
+            {
+                path:"/employees",
+                element: <div className="container">
+                    <Employees/>
+                </div>
+            },
+            {
+                path:"/login",
+                element: <div className="container flex justify-center align-middle ">
+                    <Login/>
                 </div>
             }
         ]
