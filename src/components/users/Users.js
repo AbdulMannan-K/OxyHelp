@@ -50,8 +50,10 @@ const headCells = [
     { id: 'sr', label:'Sr.'},
     { id: 'firstName', label: 'First Name' },
     { id: 'lastName', label: 'Last Name' },
+    { id: 'gender', label: 'Gender' },
     { id: 'phoneNumber', label: 'Phone Number' },
     { id: 'email', label: 'Email' },
+    { id: 'country', label: 'Country' },
     { id: 'edit', label: 'Edit' },
     { id: 'questionnaire', label: 'Questionnaire', disableSorting: true },
     { id: 'history', label: 'History', disableSorting: true, align: 'right' }
@@ -77,10 +79,9 @@ export default function Users() {
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const navigate = useNavigate();
 
-    let index=1;
 
     useEffect(() => {
-        const user = sessionStorage.getItem('Auth Token');
+        const user = localStorage.getItem('Auth Token');
         if(user==null) navigate("/login")
     }, [0]);
 
@@ -123,8 +124,8 @@ export default function Users() {
     const addOrEdit = async (user, resetForm) => {
         // setRecords([records, item])
         // console.log((await addUser(user)));
-        setRecords((await addUser(user)));
-        resetForm()
+        console.log("testing 1234 : "+records.length)
+        setRecords((await addUser(user,records.length==0?1:records.length+1)));
         setRecordForEdit(null);
         setOpenPopup(false)
         setOpenQPopup(false);
@@ -168,7 +169,15 @@ export default function Users() {
 
     const getTotalAll = ()=>{
         let total =0 ;
-        history.forEach(h=>total+=h.total)
+        let treatments= [];
+        for(let i =0 ;i < history.length ; i++){
+            if(!treatments.includes(history[i].treat_id)){
+                console.log(history[i].treat_id)
+                treatments.push(history[i].treat_id)
+                total+=history[i].total
+            }
+        }
+        console.log(total)
         return total;
     }
 
@@ -237,11 +246,13 @@ export default function Users() {
                             {
                                 recordsAfterPagingAndSorting().map(user =>
                                     (<TableRow key={user.phoneNumber}>
-                                        <TableCell>{index++}</TableCell>
+                                        <TableCell>{user.serialNumber}</TableCell>
                                         <TableCell>{user.firstName}</TableCell>
                                         <TableCell>{user.lastName}</TableCell>
+                                        <TableCell>{user.gender}</TableCell>
                                         <TableCell>{user.phoneNumber}</TableCell>
                                         <TableCell>{user.email}</TableCell>
+                                        <TableCell>{user.country}</TableCell>
                                         <TableCell align='right'>
                                             <IconButton
                                                 color="primary"
@@ -428,10 +439,10 @@ export default function Users() {
                                         <td className="px-6 py-4">
                                             {new Date(h.start.seconds*1000).toLocaleTimeString("en-GB")}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            {h.status}
+                                        <td className={`  `}>
+                                            <p className={`rounded-full px-6 py-2  ${h.status == 'Reserved' ? 'bg-gray-100' : h.status == 'Completed' ? 'bg-green-500' : 'bg-red-5000'}`}>{h.status}</p>
                                         </td>
-                                        <td>
+                                        <td className={"text-center"}>
                                             {h.employee}
                                         </td>
                                         <td className={"text-center"}>
@@ -469,10 +480,9 @@ export default function Users() {
 
                                 </td>
                                 <td className="px-6 py-4">
-
                                 </td>
                                 <td className="px-6 py-4">
-
+                                    Total :
                                 </td>
                                 <td>
 

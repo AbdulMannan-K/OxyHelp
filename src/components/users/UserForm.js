@@ -16,6 +16,7 @@ const initialValues = {
     birthDay:'',
     gender:'',
     email:'',
+    country:'',
     questionnaire:[],
     history:[],
 }
@@ -38,6 +39,8 @@ function UserForm(props) {
             temp.phoneNumber = fieldValues.phoneNumber ? "" : "This field is required."
         if ('email' in fieldValues)
             temp.email = fieldValues.email ? "" : "This field is required."
+        if ('country' in fieldValues)
+            temp.country = fieldValues.country ? "" : "This field is required."
         setErrors({
             ...temp
         })
@@ -126,6 +129,13 @@ function UserForm(props) {
                     value={values.city}
                     onChange={handleInputChange}
                     error={errors.city}/>
+                <Input
+                    name="country"
+                    label="Country"
+                    variant="outlined"
+                    value={values.country}
+                    onChange={handleInputChange}
+                    error={errors.country}/>
             <div style={{display:'block'}}>
                 <Button
                     type="submit"

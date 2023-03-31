@@ -18,14 +18,7 @@ import {getEventsOnSpecificDate,updateStatus} from '../../services/services'
 interface CustomEditorProps {
     scheduler: SchedulerHelpers;
 }
-//
-// const clients = [
-//     {
-//         name:'hello',
-//         email:'hello@mail.com',
-//         phone:'1432432423'
-//     }
-// ]
+
 const CustomEditor = ({ scheduler }: CustomEditorProps) => {
 
     const initialCapsules = [
@@ -58,6 +51,23 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
     const [capsules,setCapsules] = useState(initialCapsules);
     const [clients,setClients] = useState([]);
 
+    const event = scheduler.edited;
+
+    // Make your own form/state
+    const [state, setState] = useState({
+        // title: event?.title || "",
+        capsule: event?.title || "",
+        client: event?.client || "",
+        // description: event?.description || "",
+        day: new Date(),
+        time: 0,
+    });
+    const [error, setError] = useState({
+        // title:"",
+        capsule:"",
+        client:"",
+    });
+
     const getClients=async () => {
         setClients(await getUsers())
     }
@@ -66,76 +76,60 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
         getClients()
     },[0])
 
-    const event = scheduler.edited;
+    useEffect(()=>{
+        getAvailableHours();
+    },[state.capsule,state.day])
 
-    // Make your own form/state
-    const [state, setState] = useState({
-        // title: event?.title || "",
-        capsule: event?.title || "",
-        client: event?.cleint || "",
-        // description: event?.description || "",
-        time: event?.time || scheduler.state.start.value,
-    });
-    const [error, setError] = useState({
-        // title:"",
-        capsule:"",
-        client:"",
-    });
-
-    const getColor = (capsule)=> {
-        if(capsule==='Kapsula I-90 / 2 Person') return 'orange'
-        if(capsule==='Kapsula I-90 / 1 Person') return 'yellow'
-        if(capsule==='Kapsula C3 / Pesona') return 'green'
+    const getAvailableHours = async () => {
+        const date = (new Date(state.day)).toLocaleDateString();
+        const capsule = state.capsule;
+        const client = state.client.split(" ")[0]
+        console.log(capsule)
+        const appointedSlots = await getEventsOnDate(date,capsule,client);
+        const currentTime = (new Date().toLocaleDateString())===(new Date(state.day)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
+        console.log('Current Time : ' + currentTime);
+        console.log( (new Date().toLocaleDateString()))
+        console.log((new Date(state.day)).toLocaleString())
+        console.log('appointed slots')
+        console.log(appointedSlots)
+        let freeSlots = [];
+        for (let i = currentTime; i < 23; i++) {
+            let added=false;
+            for(let j=0 ; j < appointedSlots.length ;j++){
+                // here we have to check pm am also
+                let time = (appointedSlots[j].split(':'))[0];
+                if(appointedSlots[j].slice(-2)=='PM'){
+                    time=parseInt(time)+12;
+                    console.log('here here here')
+                }
+                if(time!=i){
+                    added=true;
+                }else{
+                    console.log('AND Appoineted slot j : '+(appointedSlots[j].split(':'))[0] +"  "+ i)
+                    added=false;
+                    break;
+                }
+            }
+            if(added)
+                freeSlots.push(i);
+        }
+        console.log('free slots')
+        console.log(freeSlots)
+        if(appointedSlots.length===0) {
+            for (let i = currentTime; i < 24; i++) {
+                freeSlots.push(i);
+            }
+        }
+        console.log(freeSlots)
+        setAvailableHours(freeSlots);
     }
-    // const [availableHours,setAvailableHours] = useState([]);
 
-    // const getEventsOnDate = (date)=>{
-    //     let events= [];
-    //     for(let j=0 ; j < EVENTS.length ; j++){
-    //         console.log((new Date(state.date).toLocaleDateString())+'  '+EVENTS[j].start.toLocaleDateString())
-    //         if(((new Date(date).toLocaleDateString())===EVENTS[j].start.toLocaleDateString())){
-    //             events.push(EVENTS[j]);
-    //         }
-    //     }
-    //     return events;
-    // }
-    //
-    // const getAvailableHours = (events)=>{
-    //     let hours=[];
-    //     for(let j=0 ; j < 24 ; j++){
-    //         let exist = false;
-    //         for(let i=0 ; i < events.length ; i++){
-    //             if(j===events[i].start.getHours()) {
-    //                 exist = true;
-    //                 break;
-    //             }
-    //         }
-    //         if(!exist) hours.push(j);
-    //     }
-    //     return hours;
-    // }
-    //
-    // const handleTimeChange = (value: string, name: string) => {
-    //     setError((prev)=>{
-    //         return {
-    //             ...prev,
-    //             [name]: ""
-    //         }
-    //     })
-    //     // if(name==="date")
-    //     //     setAvailableHours(getAvailableHours(getEventsOnDate(value)));
-    //     setState((prev) => {
-    //         return {
-    //             ...prev,
-    //             [name]: value
-    //         };
-    //     });
-    //     let caps = [];
-    //     let events = getEventsOnDate(value);
-    //     for(let i=0 ;i < events.length ; i++){
-    //         if(events.capsule!==)
-    //     }
-    // };
+
+    const getEventsOnDate = async (date,capsule,client) => {
+        // console.log('Hello : ' + await getEventsOnSpecificDate(date))
+        return (await getEventsOnSpecificDate(date,capsule,client))
+    }
+
 
     const handleChange = (value: string, name: string) => {
         console.log(value);
@@ -170,31 +164,34 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                  * start: Date|string
                  * end: Date|string
                  */
-                event.start = new Date(new Date(new Date((new Date(event.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-                event.end = new Date(new Date(new Date((new Date(event.start)).setHours(selectedTime+1)).setMinutes(0)).setSeconds(0));
+                event.start = new Date(new Date(new Date((new Date(state.day)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                event.end = new Date(new Date(new Date((new Date(state.day)).setHours(selectedTime+1)).setMinutes(0)).setSeconds(0));
 
                 setTimeout(() => {
                     res({
                         event_id:event.event_id,
-                        client:event.client,
-                        otherClients:event.otherClients,
-                        start:event.start,
-                        end:event.end,
-                        color:event.color,
                         title:event.title,
-                        status:'Reserved',
-                        clientName:event.clientName,
+                        color:event.color,
+                        start:event.start,
+                        client:event.client,
                         employee:event.employee,
+                        otherClients:event.otherClients,
+                        status:'Reserved',
                         freeOfCost:event.freeOfCost,
                         treatment:event.treatment,
+                        end:event.end,
                         deletable:event.deletable,
+                        clientName: event.clientName,
+                        comment: event.comment,
+                        treatmentNumber: event.treatmentNumber,
+                        payment: event.payment,
                     });
                 }, 3000);
             })) as ProcessedEvent;
 
             console.log('hello hello hello : ')
             console.log(added_updated_event)
-            await updateStatus(added_updated_event,event.status);
+            await updateStatus(added_updated_event,'Reserved');
 
             scheduler.onConfirm(added_updated_event, event ? "edit" : "create");
             scheduler.close();
@@ -206,45 +203,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
     const [availableHours,setAvailableHours] = useState([]);
 
 
-    const getEventsOnDate = async (date,capsule) => {
-        // console.log('Hello : ' + await getEventsOnSpecificDate(date))
-        return (await getEventsOnSpecificDate(date,capsule))
-    }
-
-    useEffect(()=>{
-        getAvailableHours();
-    },[event.title,event.start])
-    const getAvailableHours = async () => {
-        const date = (new Date(event.start)).toLocaleDateString();
-        const capsule = event.title;
-        console.log(capsule)
-        const appointedSlots = await getEventsOnDate(date,capsule);
-        console.log('appointed slots')
-        console.log(appointedSlots)
-        let freeSlots = [];
-        for (let i = 7; i < 24; i++) {
-            let added=false;
-            for(let j=0 ; j < appointedSlots.length ;j++){
-                if((appointedSlots[j].split(':'))[0]!=i){
-                    added=true;
-                }else{
-                    added=false;
-                    break;
-                }
-            }
-            if(added)
-                freeSlots.push(i);
-        }
-        console.log('free slots')
-        console.log(freeSlots)
-        if(appointedSlots.length===0) {
-            for (let i = 7; i < 24; i++) {
-                freeSlots.push(i);
-            }
-        }
-        console.log(freeSlots)
-        setAvailableHours(freeSlots);
-    }
     const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
         '& .MuiToggleButtonGroup-grouped': {
             margin: theme.spacing(0.5),
@@ -264,7 +222,20 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
     return (
         <div>
             <div className="m-4">
-                <p className="ml-2.5 mb-2.5">Available Slots : </p>
+
+                <DesktopDatePicker
+                    name="date"
+                    label="Date"
+                    variant="outlined"
+                    minDate={new Date()}
+                    inputFormat="DD/MM/YYYY"
+                    value={state.day}
+                    onChange={(e)=>setState({...state,'day':e})}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    // error={error.day}
+                />
+
+                <p className="p-2">Availaible Slots</p>
                 <StyledToggleButtonGroup
                     size="small"
                     color="primary"
@@ -278,8 +249,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                             <ToggleButton value={ah}>{ah}</ToggleButton>
                         )
                     }
-                    {/*<ToggleButton value="left" aria-label="left aligned">*/}
-                    {/*</ToggleButton>*/}
                 </StyledToggleButtonGroup>
 
                 <DialogActions>

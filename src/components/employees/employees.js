@@ -70,7 +70,7 @@ export default function Employees() {
 
     useEffect(() => {
         console.log('here')
-        const user = sessionStorage.getItem('Auth Token');
+        const user = localStorage.getItem('Auth Token');
         if (!user) navigate("/login");
     }, [0]);
 
@@ -92,24 +92,6 @@ export default function Employees() {
         recordsAfterPagingAndSorting
     } = useTable(recordForEdit, headCells, filterFn);
 
-    const handleSearch = e => {
-        let target = e.target;
-        setFilterFn({
-            fn: users => {
-                if (target.value === "")
-                    return users;
-                else
-                    return users.filter(x => x.title.toLowerCase().includes(target.value) || x.firstName.toLowerCase().includes(target.value) || x.lastName.toLowerCase().includes(target.value) || x.email.toLowerCase().includes(target.value))
-            }
-        })
-    }
-
-    const selectionRange = {
-        startDate: new Date(),
-        endDate: new Date(),
-        key: 'selection',
-    }
-
     return (
         <>
             <Paper sx={classes.pageContent}>
@@ -118,17 +100,6 @@ export default function Employees() {
                         Users
                     </Typography>
                     <div style={classes.searchToggle}>
-                        <Input
-                            placeholder="Search"
-                            size="small"
-                            InputProps={{
-                                startAdornment: (<InputAdornment position="start">
-                                    <Search/>
-                                </InputAdornment>)
-                            }}
-                            sx={classes.searchInput}
-                            onChange={handleSearch}
-                        />
                         <FormControl variant="outlined" size="small" sx={{minWidth:200}}>
                             <InputLabel id="employee">Employee</InputLabel>
                             <Select
@@ -168,7 +139,11 @@ export default function Employees() {
                                 }
                             </Select>
                         </FormControl>
-                        <DateRangePicker onCallback={(start,end,label)=>{
+                        <DateRangePicker initialSettings={{
+                            locale: {
+                                format: 'DD/MM/YYYY'
+                            }
+                        }} onCallback={(start,end,label)=>{
                             console.log(new Date(start).toLocaleDateString());
                             console.log(end);
                             records.forEach(record=>console.log(record.start));

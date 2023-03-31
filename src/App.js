@@ -10,6 +10,7 @@ import React from "react";
 import {createTheme, ThemeProvider} from "@mui/material";
 import Employees from "./components/employees/employees";
 import Login from "./components/auth/login"
+import Signup from "./components/auth/signup";
 
 const router = createBrowserRouter([
     {
@@ -44,6 +45,12 @@ const router = createBrowserRouter([
                 path:"/login",
                 element: <div className="container flex justify-center align-middle ">
                     <Login/>
+                </div>
+            },
+            {
+                path:"/signup",
+                element: <div className="container flex justify-center align-middle ">
+                    <Signup/>
                 </div>
             }
         ]

@@ -19,6 +19,7 @@ import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import {addMultipleEvents} from "../../services/services"
 
 const initialValues = {
     client:'',
@@ -202,32 +203,25 @@ function EventForm(props) {
 
     async function handleTreatment(e) {
 
-        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-        console.log(client);
-        for (let i = 0; i < client.history.length; i++) {
-            console.log('hello')
-            const treatment = await getTreatment(client.history[i])
-            if (treatment.total!==1 && treatment.total !== treatment.completed) {
-                setRepTreatment(treatment);
-                const event = await getEvent(treatment.events[0]);
-                let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
-                time=time.slice(-2)=='PM'?parseInt(time)+12:time;
-                setSelectedTime(parseInt(time))
-                console.log('rep event ' + time);
-                console.log('rep treatment : ' + client.history[i]);
-                break;
-            } else {
-                setRepTreatment(null);
-            }
-        }
+        // const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
+        // console.log(client);
+        // for (let i = 0; i < client.history.length; i++) {
+        //     console.log('hello')
+        //     const treatment = await getTreatment(client.history[i])
+        //     if (treatment.total!==1 && treatment.total !== treatment.completed) {
+        //         setRepTreatment(treatment);
+        //         const event = await getEvent(treatment.events[0]);
+        //         let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
+        //         time=time.slice(-2)=='PM'?parseInt(time)+12:time;
+        //         setSelectedTime(parseInt(time))
+        //         console.log('rep event ' + time);
+        //         console.log('rep treatment : ' + client.history[i]);
+        //         break;
+        //     } else {
+        //         setRepTreatment(null);
+        //     }
+        // }
 
-
-    }
-
-    // if treatment selected means new treatment
-    // if repeat button pressed means old treatment that is not yet completed
-
-    async function handleSubmit(e) {
         console.log(clients.find(client => client.phoneNumber === values.client));
         e.preventDefault();
         let c= values.client;
@@ -239,13 +233,7 @@ function EventForm(props) {
         values.clientName = client.firstName + ' ' + client.lastName;
         values.color = getColor(values.title);
 
-
         let newTreatment=false;
-        // if(repTreatment){
-        //     console.log('totally not here')
-        //     values.repTreatment= repTreatment;
-        //     newTreatment=false;
-        // }
         if(values.treatment===1) newTreatment=true;
 
         console.log('client test : ' + values.client)
@@ -259,13 +247,99 @@ function EventForm(props) {
                 if (checked) values.color = '#FCA5A5'
                 console.log(values)
 
+                values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
+                if(newTreatment) {
+                    addEvent(values, newTreatment);
+                    return
+                }
+                const events = [];
                 for(let i=0 ; i< values.treatment ; i++){
-                    values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-                    values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-                    addEvent(values,newTreatment);
-                    values.start.setDate(values.start.getDate()+1)
+                    if(values.start.getDay()==0) {
+                        i--;
+                        values.start.setDate(values.start.getDate() + 1)
+                    }else {
+                        console.log('checking : ' + i)
+                        values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                        values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime + 1)).setMinutes(0)).setSeconds(0));
+                        const newEvent = structuredClone(values);
+                        events.push(newEvent);
+                        values.start.setDate(values.start.getDate() + 1)
+                    }
                 }
 
+                await addMultipleEvents(events,values.client,newTreatment,values.treatment);
+                props.openPopup(false);
+                window.location.reload()
+                // props.addItem(values, resetForm,newTreatment);
+            }
+        } else {
+            console.log('not here' + validate())
+            alert('Some thing is not selected')
+        }
+
+    }
+
+    const checkNewTreatment = async()=>{
+        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
+        console.log(client);
+        for (let i = 0; i < client.history.length; i++) {
+            console.log('hello')
+            const treatment = await getTreatment(client.history[i])
+            if (treatment.total!==1 && values.treatment===treatment.total && treatment.total !== treatment.currentRegistered) {
+                setRepTreatment(treatment);
+                const event = await getEvent(treatment.events[0]);
+                let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
+                time=time.slice(-2)=='PM'?parseInt(time)+12:time;
+                setSelectedTime(parseInt(time))
+                console.log('rep event ' + time);
+                console.log('rep treatment : ' + treatment);
+                console.log(treatment);
+                return treatment;
+            } else {
+                setRepTreatment(null);
+            }
+        }
+        console.log('rep treatment : ' + repTreatment)
+        return null;
+    }
+
+    // if treatment selected means new treatment
+    // if repeat button pressed means old treatment that is not yet completed
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        let c= values.client;
+        setValues({...values,client:c.split(' ')})
+        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
+
+        values.otherClients = arr.map(i => i.value);
+        values.freeOfCost = checked ? 'yes' : 'no';
+        values.clientName = client.firstName + ' ' + client.lastName;
+        values.color = getColor(values.title);
+
+        console.log('Testing very much :  '+await checkNewTreatment())
+        console.log('Testing not very much : '+repTreatment)
+        let newTreatment=false;
+        let treatmentCheck = await checkNewTreatment();
+        if(values.treatment===1 ) newTreatment=true;
+        if(treatmentCheck===null) newTreatment=true;
+        console.log('client test : ' + values.client)
+        values.repTreatment=treatmentCheck;
+        values.client = values.client.split(" ")[0]
+        if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
+            console.log('here')
+            if (!checked && values.employee === '') {
+                alert('Some thing is not selected')
+            } else {
+                console.log(values);
+                if (checked) values.color = '#FCA5A5'
+                console.log(values)
+
+                values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
+                values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
+                addEvent(values, newTreatment);
+                props.openPopup(false);
                 // props.addItem(values, resetForm,newTreatment);
             }
         } else {
@@ -360,19 +434,7 @@ function EventForm(props) {
                     renderInput={(params) => <TextField fullWidth {...params} />}
                     error={errors.start}/>
 
-                {/*<div className="m-2">*/}
-                {/*    {*/}
-                {/*    availableHours.map(ah=>*/}
-                {/*        <span className="text-xs m-1 font-semibold inline-block uppercase rounded text-zinc-600 bg-zinc-200 uppercase last:mr-0 mr-1">*/}
-                {/*            <Button value={ah} color="primary" onClick={(e)=>setSelectedTime(e.target.value)}>*/}
-                {/*            {ah}*/}
-                {/*            </Button>*/}
-                {/*        </span>*/}
-                {/*        )*/}
-                {/*    }*/}
-                {/*</div>*/}
-
-                <StyledToggleButtonGroup
+                    <StyledToggleButtonGroup
                     size="small"
                     color="primary"
                     value={selectedTime}
@@ -385,8 +447,6 @@ function EventForm(props) {
                             <ToggleButton value={ah}>{ah}</ToggleButton>
                         )
                     }
-                    {/*<ToggleButton value="left" aria-label="left aligned">*/}
-                    {/*</ToggleButton>*/}
                 </StyledToggleButtonGroup>
 
 

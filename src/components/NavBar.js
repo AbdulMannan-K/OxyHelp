@@ -39,7 +39,7 @@ function NavBar(props) {
                         <li>
                             <a href=''
                                onClick={()=>{
-                                sessionStorage.removeItem('Auth Token');
+                                localStorage.removeItem('Auth Token');
                                 const auth = getAuth();
                                 auth.signOut();
                                 navigate('/login')

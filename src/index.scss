@@ -41,22 +41,30 @@ code {
   color: white !important;
 }
 
-.render-event-on-calender{
-  /*margin:10px;*/
-}
+//.render-event-on-calender{
+//  margin:10px;
+//}
 
-/*.css-1ps6pg7-MuiPaper-root :has(.render-event-on-calender {*/
+/*.css-1ps6pg7-MuiPaper-root :has(.render-event-on-calender) {*/
 /*  margin:10px;*/
 /*}*/
 
-/*.css-z3jy29 .rs__cell .rs__event__item {*/
-/*  margin-top:-28px;*/
-/*  height: 100px;*/
-/*  width: 35%;*/
+.css-z3jy29 .rs__cell .rs__event__item {
+  margin-top:-10px;
+}
+
+/*.css-z3jy29 .rs__cell :nth-child(2){*/
+/*  !*background-color: black;*!*/
+/*  !*margin-left: 100px;*!*/
 /*}*/
 /*.css-z3jy29 .rs__cell :nth-child(3){*/
-/*  !*background-color: black;*!*/
-/*  margin-left: 50px;*/
+/*  background-color: black;*/
+/*  margin-left: 20px;*/
+/*}*/
+
+/*.css-z3jy29 .rs__cell .rs__event__item :nth-child(3){*/
+/*  background-color: black;*/
+/*  margin-left: 10px !important;*/
 /*}*/
 
 /*.css-1nlly2f .rs__cell{*/
@@ -69,9 +77,14 @@ code {
 
 
 /*#weekRender{*/
-/*  width: 200px;*/
-/*  height: 100px;*/
+/*  !*width: 200px;*!*/
+/*  !*height: 100px;*!*/
+/*  background-color: green;*/
+/*  display: flex;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
 /*}*/
+
 /*.css-z3jy29 .rs__cell.rs__time{*/
 /*  height: 100px !important;*/
 /*}*/

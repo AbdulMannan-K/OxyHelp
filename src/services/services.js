@@ -2,15 +2,17 @@ import { doc,setDoc,getDoc,addDoc,getDocs,collection,deleteDoc } from "firebase/
 import {db} from './firebase';
 import {queries} from "@testing-library/react";
 
-export const addUser = async (user) => {
+export const addUser = async (user,serial) => {
     try {
         const docRef = await setDoc(doc(db, "clients",user.phoneNumber), {
+            serialNumber:serial? ("0000" + serial).slice(-5):user.serialNumber,
             email:user.email,
             firstName:user.firstName.toUpperCase(),
             lastName:user.lastName.toUpperCase(),
             gender:user.gender.toUpperCase(),
             birthDay:user.birthDay.toUpperCase(),
             city:user.city.toUpperCase(),
+            country:user.country.toUpperCase(),
             questionnaire:user.questionnaire,
             history:user.history,
         });
@@ -73,35 +75,105 @@ export const addTreatment = async (treatment,event,user)=>{
     }
 }
 
-export const addEventInTreatment = async (treatment,event) => {
-    treatment.events.push(event);
-    let newNumber = treatment.currentRegistered+1;
-    console.log(treatment);
-    try {
-        await setDoc(doc(db, "treatments", treatment.id), {
-            total: treatment.total,
-            completed: treatment.completed,
-            events:treatment.events,
-            currentRegistered:newNumber,
-        });
-        console.log('done');
-    }catch (e) {
-        console.error(e);
-    }
-}
-
 export const updateTreatment = async (treatment) => {
     try {
         await setDoc(doc(db, "treatments", treatment.id), {
             total: treatment.total,
             completed: treatment.completed,
             events:treatment.events,
-            currentRegistered:treatment.currentRegistered,
+            currentRegistered: treatment.currentRegistered,
         });
         console.log('done');
     }catch (e) {
         console.log(e);
     }
+}
+
+export const signUp = async (user) => {
+    try {
+        const docRef = await setDoc(doc(db, "users",user.email), {
+            email:user.email,
+            password:user.password,
+            role:user.role
+        });
+        console.log("Document    written with ID: ", docRef);
+        // user.id=docRef;
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
+
+export const getEmp= async (emp) => {
+    const docc = doc(db, "users", emp);
+    const docSnap = await getDoc(docc);
+    let findEmp = docSnap.data();
+    return findEmp;
+}
+
+const addEventsInTreatment = async (treatment,events,user) => {
+    const eventIds = events.map(event => event.id);
+    try {
+        const docRef = await addDoc(collection(db, "treatments"), {
+            total: treatment,
+            completed: 0,
+            events:eventIds,
+            currentRegistered: treatment,
+        });
+        const docc = doc(db, "clients", user);
+        const docSnap = await getDoc(docc);
+        let findUser = docSnap.data();
+        findUser= {...findUser,phoneNumber:docSnap.id};
+        console.log('testing testing');
+        console.log(findUser);
+        findUser.history.push(docRef.id);
+        await addUser(findUser);
+    } catch (e) {
+        console.error("Error adding documenst: ", e);
+    }
+}
+
+const addEventInTreatment = async (treatment,event,user) => {
+    try{
+        console.log('Testing 4566 ' + treatment , ' ', event,' ', user)
+        console.log(treatment)
+        treatment.events.push(event);
+        treatment.currentRegistered++;
+        await updateTreatment(treatment);
+    }catch (e) {
+        console.log("Error adding documents: ",e);
+    }
+}
+
+export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
+    const eventsDocRef = [];
+    for(let i=0 ; i< treatments; i++){
+        try{
+            const docRef = await addDoc(collection(db,"events"),{
+                title:events[i].title,
+                color:events[i].color,
+                start:events[i].start,
+                client:events[i].client,
+                employee:events[i].employee,
+                otherClients:events[i].otherClients,
+                status:events[i].status,
+                freeOfCost:events[i].freeOfCost,
+                treatment:events[i].treatment,
+                end:events[i].end,
+                deletable:true,
+                clientName: events[i].clientName,
+                comment: events[i].comment,
+                treatmentNumber: i+1,
+                payment: null,
+            });
+
+            eventsDocRef.push(docRef);
+        } catch (e){
+            console.error("Error adding document : "+ e)
+        }
+    }
+
+    await addEventsInTreatment(treatments,eventsDocRef,user)
+
 }
 
 export const addEvent = async (aEvent,user,newTreatment)=>{
@@ -136,18 +208,12 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
         console.log('i am also here')
         // new treatment
         console.log('new treatment : ' + newTreatment)
-        if(newTreatment){
-            console.log("here new treatment ")
+        if(newTreatment)
             await addTreatment(aEvent.treatment,docRef.id,user);
-        }else{
-            console.log("updating old Treatment ")
-            await addEventInTreatment(aEvent.repTreatment,docRef.id)
+        else {
+            console.log(aEvent)
+            await addEventInTreatment(aEvent.repTreatment, docRef.id, user);
         }
-        // findUser.history.push({total:aEvent.treatment,completed:0,events:[docRef.id]});
-        // prev treatment
-        // findUser.history.push({total:aEvent.total,completed:aEvent.})
-
-        // console.log(docSnap);
     } catch (e) {
         console.error("Error adding documenst: ", e);
     }
@@ -206,11 +272,21 @@ export const getEventsOfClients = async (docs) => {
     return events;
 }
 
+const getColor = (capsule,employee)=> {
+    if(employee=="") return '#FCA5A5'
+    else {
+        if (capsule === 'Kapsula 999') return '#FB923C'
+        if (capsule === 'Kapsula 99') return '#FEF08A'
+        if (capsule === 'Kapsula 9') return '#4ADE80'
+    }
+}
+
+
 export const updateStatus = async (aEvent,status) => {
     try {
         await setDoc(doc(db, "events", aEvent.event_id), {
             title: aEvent.title,
-            color: aEvent.color,
+            color: getColor(aEvent.title,aEvent.employee),
             start: aEvent.start,
             client: aEvent.client,
             employee: aEvent.employee,
@@ -223,6 +299,7 @@ export const updateStatus = async (aEvent,status) => {
             deletable:(status !== 'Completed'),
             comment: aEvent.comment,
             payment: aEvent.payment,
+            treatmentNumber: aEvent.treatmentNumber,
         });
         console.log('done');
         return getEvents();
@@ -232,6 +309,31 @@ export const updateStatus = async (aEvent,status) => {
 }
 
 export const deleteEvent = async (event_id) => {
+
+    const docRef = doc(db, "events", event_id);
+    const docSnap = await getDoc(docRef);
+
+    const userRef = doc(db,"clients",docSnap.data().client)
+    const userSnap = await getDoc(userRef);
+
+    for(let i=0 ; i< userSnap.data().history.length ; i++){
+        console.log(userSnap.data().history[i])
+        const treatRef = doc(db,"treatments",userSnap.data().history[i])
+        const treatDoc = await getDoc(treatRef);
+        console.log(treatDoc.data())
+        for(let j=0 ;j < treatDoc.data().events.length ; j++){
+            if(treatDoc.data().events[j]===event_id){
+                let treatment = treatDoc.data();
+                // treatment.events.remove(event_id)
+                treatment.events.splice(j, 1);
+                treatment= {...treatment,id:treatDoc.id};
+                await updateTreatment(treatment);
+                if(treatDoc.data().events.length===1) await deleteDoc(doc(db,"treatments",treatDoc.id))
+                break;
+            }
+        }
+    }
+
     await deleteDoc(doc(db, "events", event_id));
 }
 
@@ -246,6 +348,7 @@ export const getUsers = async ()=> {
             ...(doc.data()),
         })
     });
+    console.log('data here')
     console.log(users);
     return users;
 }

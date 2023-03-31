@@ -1,16 +1,22 @@
 import {Form, useForm} from "../controls/useForm";
 import Input from "../controls/Input";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import {useNavigate} from "react-router-dom";
-import {getEmp} from "../../services/services";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormHelperText from "@mui/material/FormHelperText";
+import FormControl from "@mui/material/FormControl";
+import {signUp} from "../../services/services";
 
 
 const initialValues = {
     email:'',
     password:'',
+    role:'',
 }
 
-function Login(props) {
+function Signup(props) {
 
     const auth = getAuth();
     const navigate = useNavigate();
@@ -20,7 +26,9 @@ function Login(props) {
         if ('email' in fieldValues)
             temp.email = fieldValues.email ? "" : "This field is required."
         if ('password' in fieldValues)
-            temp.password = fieldValues.password ? "" : "This field is required."
+            temp.password = fieldValues.password.length>6 ? "" : "Password should be great then 6 digits"
+        if ('role' in fieldValues)
+            temp.role = fieldValues.role!=="" ? "" : "This field is required."
         setErrors({
             ...temp
         })
@@ -32,20 +40,19 @@ function Login(props) {
     const {values,setValues,errors,setErrors,handleInputChange,resetForm} = useForm(initialValues,true,validate);
 
     async function handleSubmit() {
-
-        await signInWithEmailAndPassword(auth,values.email,values.password).then(async(response)=>{
-            console.log(response._tokenResponse.refreshToken)
-            const user = await getEmp(values.email)
-            localStorage.setItem('Auth Token', response._tokenResponse.refreshToken)
-            localStorage.setItem('Role', user.role)
-            navigate('/capsules');
-        }).catch(err=>{
-            console.log(err);
-            alert('Wrong Login Details, Please Enter again')
-        })
-
+        if(errors.email || errors.password || errors.role){
+            alert('Please fill all the fields correctly')
+        }
+        else {
+            await createUserWithEmailAndPassword(auth, values.email, values.password).then(async (response) => {
+                await signUp(values)
+                navigate('/login');
+            }).catch(err => {
+                alert('User already exists')
+                console.log(err);
+            })
+        }
     }
-    // className="flex flex-col gap-4 w-1/3 h-1/1 justify-center align-middle"
     return (
         <div  style={
             {
@@ -65,6 +72,7 @@ function Login(props) {
                 label="Email"
                 name="email"
                 variant="outlined"
+                error={errors.email}
             />
             <Input
                 onChange={handleInputChange}
@@ -74,8 +82,22 @@ function Login(props) {
                 name="password"
                 variant="outlined"
                 type="password"
+                error={errors.password}
             />
-            <p onClick={()=>navigate('/signup')}>don't have an account? signup</p>
+            <FormControl fullWidth sx={{ minWidth: 120 }} error={!!errors.role}>
+                <InputLabel>Role</InputLabel>
+                <Select
+                    value={values.role}
+                    label="Role"
+                    name="role"
+                    defaultValue={""}
+                    onChange={handleInputChange}
+                >
+                    <MenuItem value="Employee">Employee</MenuItem>
+                    <MenuItem value="Admin">Admin</MenuItem>
+                </Select>
+                <FormHelperText>{errors.capsule}</FormHelperText>
+            </FormControl>
             <button
                 type="submit"
                 onClick={handleSubmit}
@@ -85,4 +107,4 @@ function Login(props) {
     );
 }
 
-export default Login;
+export default Signup;

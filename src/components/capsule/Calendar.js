@@ -90,14 +90,19 @@ function WeekScheduler() {
          setEvents([...events, event]);
          resetForm();
          setOpenPopup(false);
+         window.location.reload();
      }
 
+
+
      const getAllEvents = async () => {
+         let role = localStorage.getItem('Role');
          let gevents = ((await getEvents())).map(event => {
              return {
                  ...event,
                  start: (new Date(event.start.seconds * 1000)),
                  end: new Date(event.end.seconds * 1000),
+                 deletable:role === 'Admin',
              }
          })
          console.log(gevents);
@@ -143,7 +148,7 @@ function WeekScheduler() {
      },[0])
 
     useEffect(() => {
-        const user = sessionStorage.getItem('Auth Token');
+        const user = localStorage.getItem('Auth Token');
         if(!user) navigate("/login")
     }, [0]);
 
@@ -156,6 +161,7 @@ function WeekScheduler() {
          >
              <EventForm
                  addItem={addEvents}
+                 openPopup={setOpenPopup}
              />
          </Popup>
         <div className="flex justify-between ">
@@ -198,6 +204,7 @@ function WeekScheduler() {
                                  })
                              }
                              <p>Treatment Number: {event.treatmentNumber}/{event.treatment}</p>
+                             <p>Comment: {event.comment}</p>
                          </div>
                          <div className="mt-4">
                              <button type="button"
@@ -242,5 +249,6 @@ function WeekScheduler() {
      </div>)
 
  }
+
 
 export {WeekScheduler}
