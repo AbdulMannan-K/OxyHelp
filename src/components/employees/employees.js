@@ -4,7 +4,7 @@ import {
     TableBody,
     TableCell,
     InputAdornment,
-    Typography, Input, Button, TableRow, Slide
+    Typography, Input, Button, TableRow, Slide, ToggleButton
 } from '@mui/material';
 import { Search } from "@mui/icons-material";
 import useTable from "../users/useTable";
@@ -18,6 +18,9 @@ import 'bootstrap-daterangepicker/daterangepicker.css';
 import {getAuth} from "firebase/auth";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {useNavigate} from "react-router-dom";
+import CheckIcon from '@mui/icons-material/Check';
+
+import {get} from "axios";
 
 const styles = {
     pageContent: {
@@ -56,6 +59,9 @@ export default function Employees() {
     const [completed,setCompleted] = useState(0)
     const [records, setRecords] = useState([])
     const [uniqueEmployees, setUniqueEmployees] = useState([]);
+    const [dateRangeStart,setDateRangeStart] = useState(null)
+    const [dateRangeEnd,setDateRangeEnd] = useState(null)
+    const [selected, setSelected] = React.useState(false);
     const auth = getAuth();
     const [user, loading, error] = useAuthState(auth);
     const navigate = useNavigate();
@@ -67,6 +73,13 @@ export default function Employees() {
 
     let index=1;
 
+    useEffect(()=>{
+        if(selected)
+            setRecordForEdit(records.filter(record => record.employee === employee &&  new Date(record.start.seconds*1000).getTime()>dateRangeStart && new Date(record.start.seconds*1000).getTime()<dateRangeEnd))
+        else
+            setRecordForEdit(records.filter(record => record.employee === employee))
+        if(employee=="All") setRecordForEdit(records)
+    },[employee,dateRangeStart,dateRangeEnd,selected])
 
     useEffect(() => {
         console.log('here')
@@ -82,9 +95,18 @@ export default function Employees() {
         setUniqueEmployees([...new Set(records.map(record=>record.employee))])
     },[records])
 
-    // useEffect(()=>{
-    //     setRecordForEdit(records.filter(record=>record.employee===employee))
-    // },employee)
+    const getColor = (capsule,employee)=> {
+        console.log('capsule',capsule)
+        if(employee=="") return 'bg-customPink'
+        else {
+            if (capsule === 'Kapsula 999') return 'bg=customOrange'
+            if (capsule === 'Kapsula 99') return 'bg-customYellow'
+            if (capsule === 'Kapsula 9') {
+                return 'bg-customGreen'
+            }
+        }
+    }
+
     const {
         TblContainer,
         TblHead,
@@ -110,7 +132,7 @@ export default function Employees() {
                                     setEmployee(e.target.value);
                                     let t=0;
                                     let c=0;
-                                    if(e.target.value!=='None') {
+                                    if(e.target.value!=='All'){
                                         records.forEach(record => {
                                             if (record.employee === e.target.value) {
                                                 t++;
@@ -119,7 +141,7 @@ export default function Employees() {
                                         })
                                         setTotal(t);
                                         setCompleted(c)
-                                        setRecordForEdit(records.filter(record => record.employee === e.target.value))
+                                        // setRecordForEdit(recordForEdit.filter(record => record.employee === e.target.value))
                                     }else{
                                         records.forEach(record => {
                                             t++;
@@ -127,11 +149,10 @@ export default function Employees() {
                                         })
                                         setTotal(t);
                                         setCompleted(c)
-                                        setRecordForEdit(records)
                                     }
                                 }}
                             >
-                                <MenuItem value={'None'}>None</MenuItem>
+                                <MenuItem value={'All'}>All</MenuItem>
                                 {
                                     uniqueEmployees.map(record=>{
                                         return <MenuItem value={record}>{record}</MenuItem>
@@ -146,13 +167,25 @@ export default function Employees() {
                         }} onCallback={(start,end,label)=>{
                             console.log(new Date(start).toLocaleDateString());
                             console.log(end);
+                            setDateRangeStart(new Date(start).getTime())
+                            setDateRangeEnd(new Date(end).getTime())
                             records.forEach(record=>console.log(record.start));
-                            setRecordForEdit(records.filter(record => new Date(record.start.seconds*1000).getTime()>new Date(start).getTime() && new Date(record.start.seconds*1000).getTime()<new Date(end).getTime()))
+                            // setRecordForEdit(recordForEdit.filter(record => new Date(record.start.seconds*1000).getTime()>new Date(start).getTime() && new Date(record.start.seconds*1000).getTime()<new Date(end).getTime()))
                         }
                         }>
                                 <input type="text"
                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
                         </DateRangePicker>
+                        <ToggleButton
+                            size="small"
+                            value="time"
+                            selected={selected}
+                            onChange={() => {
+                                setSelected(!selected);
+                            }}
+                        >
+                            <CheckIcon />
+                        </ToggleButton>
                     </div>
                 </div>
                 <TblContainer>
@@ -163,11 +196,15 @@ export default function Employees() {
                                 (<TableRow key={record.employee}>
                                     <TableCell>{index++}</TableCell>
                                     <TableCell>{record.employee}</TableCell>
-                                    <TableCell>{record.title}</TableCell>
+                                    <TableCell>
+                                        <p className={`rounded-full px-6 py-2 w-2/3 text-white ${getColor(record.title,record.employee)}`}>{record.title}</p>
+                                    </TableCell>
                                     <TableCell>{new Date(record.start.seconds*1000).toLocaleDateString("en-GB")}</TableCell>
                                     <TableCell>{new Date(record.start.seconds*1000).toLocaleTimeString("en-GB")}</TableCell>
                                     <TableCell>{new Date(record.end.seconds*1000).toLocaleTimeString("en-GB")}</TableCell>
-                                    <TableCell>{record.status}</TableCell>
+                                    <TableCell>
+                                        <p className={`rounded-full px-6 py-2 w-1/2 text-white ${record.status == 'Reserved' ? 'bg-blue-800' : record.status == 'Completed' ? 'bg-green-700' : 'bg-red-500'}`}>{record.status}</p>
+                                    </TableCell>
                                 </TableRow>)
                             )
                         }

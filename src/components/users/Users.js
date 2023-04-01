@@ -440,9 +440,10 @@ export default function Users() {
                                             {new Date(h.start.seconds*1000).toLocaleTimeString("en-GB")}
                                         </td>
                                         <td className={`  `}>
-                                            <p className={`rounded-full px-6 py-2  ${h.status == 'Reserved' ? 'bg-gray-100' : h.status == 'Completed' ? 'bg-green-500' : 'bg-red-5000'}`}>{h.status}</p>
+                                            <p className={`rounded-full px-6 py-2  ${h.status == 'Reserved' ? 'bg-blue-800' : h.status == 'Completed' ? 'bg-green-700' : 'bg-red-500'}`}>{h.status}</p>
                                         </td>
                                         <td className={"text-center"}>
+                                            {h.employee}
                                             {h.employee}
                                         </td>
                                         <td className={"text-center"}>
