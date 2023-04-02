@@ -13,7 +13,8 @@ export const addUser = async (user,serial) => {
             birthDay:user.birthDay.toUpperCase(),
             city:user.city.toUpperCase(),
             country:user.country.toUpperCase(),
-            questionnaire:user.questionnaire,
+            afterQues:user.afterQues,
+            beforeQues:user.beforeQues,
             history:user.history,
         });
         console.log("Document    written with ID: ", docRef);
@@ -93,6 +94,8 @@ export const signUp = async (user) => {
     try {
         const docRef = await setDoc(doc(db, "users",user.email), {
             email:user.email,
+            firstName:user.firstName,
+            secondName:user.secondName,
             password:user.password,
             role:user.role
         });
@@ -109,6 +112,7 @@ export const getEmp= async (emp) => {
     let findEmp = docSnap.data();
     return findEmp;
 }
+
 
 const addEventsInTreatment = async (treatment,events,user) => {
     const eventIds = events.map(event => event.id);
@@ -221,15 +225,28 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
 
 
 export const getEvents = async ()=> {
-    const querySnapshot = await getDocs(collection(db, "events"));
+
+    const querySnapshot = await getDocs(collection(db, "treatments"));
     let events = [];
-    querySnapshot.forEach((doc) => {
-        // console.log(doc.id, " => ", doc.data());
-        events.push({
-            event_id:doc.id,
-            ...(doc.data()),
-        });
-    });
+    for(let i = 0 ; i < querySnapshot.docs.length ; i++){
+        let event_ids = await querySnapshot.docs[i].data().events;
+        for(let j = 0 ; j < event_ids.length ; j++){
+            const docc = doc(db, "events", event_ids[j]);
+            const docSnap = await getDoc(docc);
+            let findEvent = await docSnap.data();
+            findEvent= {...findEvent,event_id:docSnap.id,completed:querySnapshot.docs[i].data().completed,total:querySnapshot.docs[i].data().total};
+            events.push(findEvent);
+        }
+    }
+    // const querySnapshot = await getDocs(collection(db, "events"));
+    // let events = [];
+    // querySnapshot.forEach((doc) => {
+    //     // console.log(doc.id, " => ", doc.data());
+    //     events.push({
+    //         event_id:doc.id,
+    //         ...(doc.data()),
+    //     });
+    // });
     console.log('Events start')
     console.log(events);
     console.log('Events end')
@@ -273,7 +290,7 @@ export const getEventsOfClients = async (docs) => {
 }
 
 const getColor = (capsule,employee)=> {
-    if(employee=="") return '#FCA5A5'
+    if(employee) return '#FCA5A5'
     else {
         if (capsule === 'Kapsula 999') return '#FB923C'
         if (capsule === 'Kapsula 99') return '#FEF08A'
@@ -286,7 +303,7 @@ export const updateStatus = async (aEvent,status) => {
     try {
         await setDoc(doc(db, "events", aEvent.event_id), {
             title: aEvent.title,
-            color: getColor(aEvent.title,aEvent.employee),
+            color: getColor(aEvent.title,aEvent.freeOfCost),
             start: aEvent.start,
             client: aEvent.client,
             employee: aEvent.employee,
@@ -367,6 +384,19 @@ export const getEventsFromTreatment = async (treatmentId)=>{
     }
     console.log(events);
     return events;
+
+}
+
+export const getAllEmployees = async (setRecords)=>{
+    const querySnapshot = await getDocs(collection(db, "users"));
+    let employees = [];
+    querySnapshot.forEach((doc) => {
+        employees.push({
+            id:doc.id,
+            ...(doc.data()),
+        })
+    });
+    setRecords(employees)
 
 }
 

@@ -165,12 +165,7 @@ function WeekScheduler() {
              />
          </Popup>
         <div className="flex justify-between ">
-            <button type="button"
-                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                    onClick={()=> setOpenPopup(true)}
-            >Add Booking
-            </button>
-            <div className="flex gap-4 justify-center bg-blue-700 hover:bg-blue-800 w-96 rounded-lg px-5 py-2.5 mb-2">
+            <div className="flex gap-4 justify-center bg-yellow-300 hover:bg-yellow-400 w-96 rounded-lg px-5 py-2.5 mb-2">
                 <li className="text-green-400">
                     Completed
                 </li>
@@ -181,6 +176,11 @@ function WeekScheduler() {
                     Canceled
                 </li>
             </div>
+            <button type="button"
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    onClick={()=> setOpenPopup(true)}
+            >Add Booking
+            </button>
         </div>
         <Scheduler
              hourFormat={24}
@@ -204,6 +204,8 @@ function WeekScheduler() {
                                  })
                              }
                              <p>Treatment Number: {event.treatmentNumber}/{event.treatment}</p>
+                             <p>Completed : {event.completed}/{event.treatment}</p>
+                             <p>Employee Name: {event.employee}</p>
                              <p>Comment: {event.comment}</p>
                          </div>
                          <div className="mt-4">

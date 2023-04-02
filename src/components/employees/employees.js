@@ -18,6 +18,7 @@ import 'bootstrap-daterangepicker/daterangepicker.css';
 import {getAuth} from "firebase/auth";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {useNavigate} from "react-router-dom";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckIcon from '@mui/icons-material/Check';
 
 import {get} from "axios";
@@ -184,7 +185,7 @@ export default function Employees() {
                                 setSelected(!selected);
                             }}
                         >
-                            <CheckIcon />
+                            <AccessTimeIcon />
                         </ToggleButton>
                     </div>
                 </div>

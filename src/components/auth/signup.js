@@ -12,6 +12,8 @@ import {signUp} from "../../services/services";
 
 const initialValues = {
     email:'',
+    firstName:'',
+    secondName:'',
     password:'',
     role:'',
 }
@@ -23,6 +25,10 @@ function Signup(props) {
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors }
+        if ('firstName' in fieldValues)
+            temp.firstName = fieldValues.firstName ? "" : "This field is required."
+        if ('secondName' in fieldValues)
+            temp.secondName = fieldValues.secondName ? "" : "This field is required."
         if ('email' in fieldValues)
             temp.email = fieldValues.email ? "" : "This field is required."
         if ('password' in fieldValues)
@@ -40,7 +46,7 @@ function Signup(props) {
     const {values,setValues,errors,setErrors,handleInputChange,resetForm} = useForm(initialValues,true,validate);
 
     async function handleSubmit() {
-        if(errors.email || errors.password || errors.role){
+        if(errors.email || errors.password || errors.role || errors.firstName || errors.secondName){
             alert('Please fill all the fields correctly')
         }
         else {
@@ -65,6 +71,24 @@ function Signup(props) {
                 alignItems:'center',
             }
         }>
+            <Input
+                onChange={handleInputChange}
+                value={values.firstName}
+                fullWidth
+                label="First Name"
+                name="firstName"
+                variant="outlined"
+                error={errors.firstName}
+            />
+            <Input
+                onChange={handleInputChange}
+                value={values.secondName}
+                fullWidth
+                label="Second Name"
+                name="secondName"
+                variant="outlined"
+                error={errors.secndName}
+            />
             <Input
                 onChange={handleInputChange}
                 value={values.email}

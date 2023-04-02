@@ -17,7 +17,8 @@ const initialValues = {
     gender:'',
     email:'',
     country:'',
-    questionnaire:[],
+    afterQues:[],
+    beforeQues:[],
     history:[],
 }
 

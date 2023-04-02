@@ -8,6 +8,8 @@ import MenuItem from "@mui/material/MenuItem";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from "@mui/material/FormControl";
 import {
+    getAllEmployees,
+    getEmployees,
     getEvent,
     getEventsOnSpecificDate,
     getTreatment,
@@ -20,6 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import {addMultipleEvents} from "../../services/services"
+import {useNavigate} from "react-router-dom";
 
 const initialValues = {
     client:'',
@@ -97,6 +100,8 @@ function EventForm(props) {
     const [repTreatment,setRepTreatment] = useState(null);
     const [arr, setArr] = useState([]);
     const [checked,setChecked] = useState(false);
+    const [employees,setEmployees] = useState([]);
+    const navigate = useNavigate();
 
     const addInput = () => {
         setArr(s => {
@@ -133,6 +138,10 @@ function EventForm(props) {
         });
     };
 
+
+    useEffect( () => {
+        getAllEmployees(setEmployees)
+    },[0])
 
     const getClients=async () => {
         setClients(await getUsers())
@@ -201,27 +210,7 @@ function EventForm(props) {
         if(capsule==='Kapsula 9') return '#4ADE80'
     }
 
-    async function handleTreatment(e) {
-
-        // const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-        // console.log(client);
-        // for (let i = 0; i < client.history.length; i++) {
-        //     console.log('hello')
-        //     const treatment = await getTreatment(client.history[i])
-        //     if (treatment.total!==1 && treatment.total !== treatment.completed) {
-        //         setRepTreatment(treatment);
-        //         const event = await getEvent(treatment.events[0]);
-        //         let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
-        //         time=time.slice(-2)=='PM'?parseInt(time)+12:time;
-        //         setSelectedTime(parseInt(time))
-        //         console.log('rep event ' + time);
-        //         console.log('rep treatment : ' + client.history[i]);
-        //         break;
-        //     } else {
-        //         setRepTreatment(null);
-        //     }
-        // }
-
+    async function handleSubmit(e) {
         console.log(clients.find(client => client.phoneNumber === values.client));
         e.preventDefault();
         let c= values.client;
@@ -271,75 +260,6 @@ function EventForm(props) {
                 await addMultipleEvents(events,values.client,newTreatment,values.treatment);
                 props.openPopup(false);
                 window.location.reload()
-                // props.addItem(values, resetForm,newTreatment);
-            }
-        } else {
-            console.log('not here' + validate())
-            alert('Some thing is not selected')
-        }
-
-    }
-
-    const checkNewTreatment = async()=>{
-        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-        console.log(client);
-        for (let i = 0; i < client.history.length; i++) {
-            console.log('hello')
-            const treatment = await getTreatment(client.history[i])
-            if (treatment.total!==1 && values.treatment===treatment.total && treatment.total !== treatment.currentRegistered) {
-                setRepTreatment(treatment);
-                const event = await getEvent(treatment.events[0]);
-                let time = (new Date(event.start.seconds*1000)).toLocaleTimeString();
-                time=time.slice(-2)=='PM'?parseInt(time)+12:time;
-                setSelectedTime(parseInt(time))
-                console.log('rep event ' + time);
-                console.log('rep treatment : ' + treatment);
-                console.log(treatment);
-                return treatment;
-            } else {
-                setRepTreatment(null);
-            }
-        }
-        console.log('rep treatment : ' + repTreatment)
-        return null;
-    }
-
-    // if treatment selected means new treatment
-    // if repeat button pressed means old treatment that is not yet completed
-
-    async function handleSubmit(e) {
-        e.preventDefault();
-        let c= values.client;
-        setValues({...values,client:c.split(' ')})
-        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-
-        values.otherClients = arr.map(i => i.value);
-        values.freeOfCost = checked ? 'yes' : 'no';
-        values.clientName = client.firstName + ' ' + client.lastName;
-        values.color = getColor(values.title);
-
-        console.log('Testing very much :  '+await checkNewTreatment())
-        console.log('Testing not very much : '+repTreatment)
-        let newTreatment=false;
-        let treatmentCheck = await checkNewTreatment();
-        if(values.treatment===1 ) newTreatment=true;
-        if(treatmentCheck===null) newTreatment=true;
-        console.log('client test : ' + values.client)
-        values.repTreatment=treatmentCheck;
-        values.client = values.client.split(" ")[0]
-        if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
-            console.log('here')
-            if (!checked && values.employee === '') {
-                alert('Some thing is not selected')
-            } else {
-                console.log(values);
-                if (checked) values.color = '#FCA5A5'
-                console.log(values)
-
-                values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-                values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
-                addEvent(values, newTreatment);
-                props.openPopup(false);
                 // props.addItem(values, resetForm,newTreatment);
             }
         } else {
@@ -492,14 +412,22 @@ function EventForm(props) {
 
                 {/*{<Button>Repeat</Button>}*/}
 
-                <Input
-                    onChange={handleInputChange}
-                    value={values.employee}
-                    fullWidth
-                    label="Employee"
-                    name="employee"
-                    variant="outlined"
-                />
+                <FormControl fullWidth sx={{ minWidth: 120 }} error={!!errors.employee}>
+                    <InputLabel>Employee</InputLabel>
+                    <Select
+                        value={values.employee}
+                        label="Employee"
+                        name="employee"
+                        onChange={handleInputChange}
+                    >
+                        {
+                            employees.map(employee=>{
+                                return <MenuItem value={employee.firstName+' '+employee.secondName}>{employee.firstName+' '+employee.secondName}</MenuItem>
+                            })
+                        }
+                    </Select>
+                    <FormHelperText>{errors.capsule}</FormHelperText>
+                </FormControl>
 
 
                 <FormControlLabel control={<Switch checked={checked} onChange={(e)=>setChecked(e.target.checked)} />} label="Free Of Cost" />
@@ -522,9 +450,10 @@ function EventForm(props) {
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                     >Submit</button>
                     <button
-                        onClick={handleTreatment}
-                        className="text-white bg-emerald-600 hover:bg-emerald-800 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                    >Repeat</button>
+                        type="button"
+                        onClick={()=>navigate('/clients')}
+                        className="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
+                    >Add Client</button>
                 </div>
             </div>
         </Form>
