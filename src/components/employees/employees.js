@@ -63,8 +63,7 @@ export default function Employees() {
     const [dateRangeStart,setDateRangeStart] = useState(null)
     const [dateRangeEnd,setDateRangeEnd] = useState(null)
     const [selected, setSelected] = React.useState(false);
-    const auth = getAuth();
-    const [user, loading, error] = useAuthState(auth);
+    const [bonus,setBonus]=React.useState(0)
     const navigate = useNavigate();
     const [filterFn, setFilterFn] = useState({
         fn: users => {
@@ -120,7 +119,7 @@ export default function Employees() {
             <Paper sx={classes.pageContent}>
                 <div style={classes.toolBar}>
                     <Typography variant="h4" noWrap  component="div">
-                        Users
+                        Employees
                     </Typography>
                     <div style={classes.searchToggle}>
                         <FormControl variant="outlined" size="small" sx={{minWidth:200}}>
@@ -198,7 +197,7 @@ export default function Employees() {
                                     <TableCell>{index++}</TableCell>
                                     <TableCell>{record.employee}</TableCell>
                                     <TableCell>
-                                        <p className={`rounded-full px-6 py-2 w-2/3 text-white ${getColor(record.title,record.employee)}`}>{record.title}</p>
+                                        <p className={`rounded-full px-6 py-2 w-2/3 text-black ${getColor(record.title,record.employee)}`}>{record.title}</p>
                                     </TableCell>
                                     <TableCell>{new Date(record.start.seconds*1000).toLocaleDateString("en-GB")}</TableCell>
                                     <TableCell>{new Date(record.start.seconds*1000).toLocaleTimeString("en-GB")}</TableCell>
@@ -211,7 +210,11 @@ export default function Employees() {
                         }
                     </TableBody>
                 </TblContainer>
-                <p style={{position:'absolute', marginTop:14}}>Total : {total} | Completed: {completed}</p>
+                <span style={{position:'absolute',marginTop:14, zIndex:100}}>
+                    <p style={{display:'inline', marginRight:'5px'}}>Total : {total} | Completed: {completed} x </p>
+                    <input value={bonus} onChange={(e)=>setBonus(e.target.value)} style={{display:'inline',width:'100px', marginRight:2,marginLeft:2}} className="p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 "  type="number"/>
+                    <p style={{display:'inline'}}> Bonus of {completed*bonus}.00 euros</p>
+                </span>
                 <TblPagination/>
             </Paper>
         </>

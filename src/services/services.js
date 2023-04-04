@@ -13,6 +13,7 @@ export const addUser = async (user,serial) => {
             birthDay:user.birthDay.toUpperCase(),
             city:user.city.toUpperCase(),
             country:user.country.toUpperCase(),
+            questionnaire:user.questionnaire,
             afterQues:user.afterQues,
             beforeQues:user.beforeQues,
             history:user.history,

@@ -141,6 +141,7 @@ function EventForm(props) {
 
     useEffect( () => {
         getAllEmployees(setEmployees)
+        setValues({...values,employee:localStorage.getItem('employee')})
     },[0])
 
     const getClients=async () => {
@@ -418,6 +419,7 @@ function EventForm(props) {
                         value={values.employee}
                         label="Employee"
                         name="employee"
+                        disabled
                         onChange={handleInputChange}
                     >
                         {
@@ -428,7 +430,6 @@ function EventForm(props) {
                     </Select>
                     <FormHelperText>{errors.capsule}</FormHelperText>
                 </FormControl>
-
 
                 <FormControlLabel control={<Switch checked={checked} onChange={(e)=>setChecked(e.target.checked)} />} label="Free Of Cost" />
 

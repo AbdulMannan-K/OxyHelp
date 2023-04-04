@@ -166,13 +166,13 @@ function WeekScheduler() {
          </Popup>
         <div className="flex justify-between ">
             <div className="flex gap-4 justify-center bg-yellow-300 hover:bg-yellow-400 w-96 rounded-lg px-5 py-2.5 mb-2">
-                <li className="text-green-400">
+                <li className="text-green-400 font-bold">
                     Completed
                 </li>
-                <li className="text-gray-500">
+                <li className="text-gray-500 font-bold">
                     Reserved
                 </li>
-                <li className="text-red-600">
+                <li className="text-red-600 font-bold">
                     Canceled
                 </li>
             </div>

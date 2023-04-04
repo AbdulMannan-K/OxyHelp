@@ -57,6 +57,7 @@ const headCells = [
     { id: 'email', label: 'Email' },
     { id: 'country', label: 'Country' },
     { id: 'edit', label: 'Edit' },
+    { id: 'questionnaire', label: 'Questionnaire', disableSorting: true },
     { id: 'beforeQues', label: 'Before', disableSorting: true },
     { id: 'afterQues', label: 'After', disableSorting: true },
     { id: 'history', label: 'History', disableSorting: true }
@@ -73,14 +74,17 @@ export default function Users() {
     })
     const [openPopup, setOpenPopup] = useState(false)
     const [openCPopup, setOpenCPopup] = useState(false)
+    const [openQPopup, setOpenQPopup] = useState(false)
     const [openBQPopup, setOpenBQPopup] = useState(false)
     const [openAQPopup, setOpenAQPopup] = useState(false)
     const [openHPopup,setOpenHPopup] = useState(false);
     const [history,setHistory] = useState([]);
     const [currentHistory,setCurrentHistory] = useState(null);
     const [image,setImage]= useState();
+    const [currentImageQ, setCurrentImageQ] = useState(0);
     const [currentImage, setCurrentImage] = useState(0);
     const [currentImageA, setCurrentImageA] = useState(0);
+    const [isViewerOpenQ, setIsViewerOpenQ] = useState(false);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [isViewerOpenA, setIsViewerOpenA] = useState(false);
     const navigate = useNavigate();
@@ -128,9 +132,19 @@ export default function Users() {
         setIsViewerOpenA(true);
     }, []);
 
+    const openImageViewerQ = useCallback((index) => {
+        setCurrentImageA(index);
+        setIsViewerOpenQ(true);
+    },[]);
+
     const closeImageViewer = () => {
         setCurrentImage(0);
         setIsViewerOpen(false);
+    };
+
+    const closeImageViewerQ = () => {
+        setCurrentImageQ(0);
+        setIsViewerOpenQ(false);
     };
 
     const closeImageViewerA = () => {
@@ -163,6 +177,27 @@ export default function Users() {
 
     const onFileChange = (e) => {
         setImage(e.target.files[0]);
+    }
+
+    const handleImageSubmit = (e,client)=>{
+        e.preventDefault()
+        if(client.questionnaire.length==5) {
+            alert('You cant enter more then 5 images')
+            return
+        }
+        if(image==undefined) {
+            alert('Please select an image')
+            return
+        }
+        const formData = new FormData()
+        formData.append('image', image)
+        formData.append('client',client.phoneNumber )
+        axios.post("http://localhost:4000/", formData, {
+        }).then(async res => {
+            console.log(res)
+            client.questionnaire.push(res.data)
+            setRecords(await addUser(client));
+        })
     }
 
     const handleImageSubmitAfter = (e,client)=>{
@@ -240,7 +275,27 @@ export default function Users() {
         return total;
     }
 
-        return (
+    async function handleImageDelete(e, recordForEdit, question, index, type) {
+        console.log(recordForEdit)
+        console.log(e)
+        console.log(question)
+        console.log(index)
+        if (type == 'After') {
+            recordForEdit.afterQues=recordForEdit.afterQues.filter((item) => item != question)
+        } else if (type == 'Before') {
+            recordForEdit.beforeQues=recordForEdit.beforeQues.filter((item) => item != question)
+        } else if (type == 'Question') {
+            console.log('Hello')
+            recordForEdit.questionnaire=recordForEdit.questionnaire.filter((item) => item != question)
+        }
+        setRecords(await addUser(recordForEdit));
+        let imageName = question.split('/');
+        axios.delete(`http://localhost:4000/${imageName[imageName.length - 1]}`, {}).then(async res => {
+            console.log(res)
+        })
+    }
+
+    return (
             <>
                 <Paper sx={classes.pageContent}>
                     <div style={classes.toolBar}>
@@ -288,6 +343,16 @@ export default function Users() {
                                                 color="primary"
                                                 onClick={() => { openInPopup(user) }}
                                             ><EditOutlinedIcon fontSize="small"/>
+                                            </IconButton>
+                                        </TableCell>
+                                        <TableCell >
+                                            <IconButton
+                                                color="primary"
+                                                onClick={() => {
+                                                    setRecordForEdit(user);
+                                                    setOpenQPopup(true);
+                                                }}
+                                            ><VisibilityIcon fontSize="small"/>
                                             </IconButton>
                                         </TableCell>
                                         <TableCell >
@@ -357,6 +422,50 @@ export default function Users() {
                 <Dialog
                     fullScreen
                     sx={{zIndex:10}}
+                    open={openQPopup}
+                    onClose={()=>setOpenQPopup(false)}
+                >
+                    <AppBar sx={{ position: 'relative' }}>
+                        <Toolbar sx={{backgroundColor:'#52b387'}}>
+                            <IconButton
+                                edge="start"
+                                color="red"
+                                onClick={()=>setOpenQPopup(false)}
+                                aria-label="close"
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                                Questionnaire
+                            </Typography>
+                            <div className="mt-2">
+                                <input type="file" onChange={onFileChange} />
+                                <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={(e)=>handleImageSubmit(e,recordForEdit)}>Add Image</button>
+                            </div>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="min-w-fit">
+                        {recordForEdit!==null?<div  className="grid grid-cols-2 justify-evenly gap-10 mt-5 border-2">
+                            {recordForEdit.questionnaire.map((question,index)=> <div><img
+                                src={question}
+                                alt={question}
+                                width='90%'
+                                loading="lazy"
+                                style={{cursor:'pointer', display:'inline', margin:10}}
+                                onClick={()=> {
+                                    openImageViewerQ(index)
+                                    setOpenQPopup(false)
+                                }}
+
+                            />
+                                {localStorage.getItem('Role')=='Admin'?<button className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800" onClick={(e)=>handleImageDelete(e,recordForEdit,question,index,'Question')}>Delete</button>:<></>}
+                            </div>)}
+                        </div>:<></>}
+                    </div>
+                </Dialog>
+                <Dialog
+                    fullScreen
+                    sx={{zIndex:10}}
                     open={openBQPopup}
                     onClose={()=>setOpenBQPopup(false)}
                 >
@@ -371,7 +480,7 @@ export default function Users() {
                             <CloseIcon />
                         </IconButton>
                         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                            Questionnaire
+                            Before Questionnaire
                         </Typography>
                         <div className="mt-2">
                             <input type="file" onChange={onFileChange} />
@@ -381,7 +490,7 @@ export default function Users() {
                     </AppBar>
                     <div className="min-w-fit">
                         {recordForEdit!==null?<div  className="grid grid-cols-2 justify-evenly gap-10 mt-5 border-2">
-                            {recordForEdit.beforeQues.map((question,index)=> <img
+                            {recordForEdit.beforeQues.map((question,index)=> <div><img
                                 src={question}
                                 alt={question}
                                 width='90%'
@@ -392,7 +501,9 @@ export default function Users() {
                                     setOpenBQPopup(false)
                                 }}
 
-                            />)}
+                            />
+                                {localStorage.getItem('Role')=='Admin'?<button className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800" onClick={(e)=>handleImageDelete(e,recordForEdit,question,index,'Before')}>Delete</button>:<></>}
+                            </div>)}
                         </div>:<></>}
                     </div>
                 </Dialog>
@@ -413,7 +524,7 @@ export default function Users() {
                                 <CloseIcon />
                             </IconButton>
                             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                                Questionnaire
+                                After Questionnaire
                             </Typography>
                             <div className="mt-2">
                                 <input type="file" onChange={onFileChange} />
@@ -423,7 +534,7 @@ export default function Users() {
                     </AppBar>
                     <div className="min-w-fit">
                         {recordForEdit!==null?<div  className="grid grid-cols-2 justify-evenly gap-10 mt-5 border-2">
-                            {recordForEdit.afterQues.map((question,index)=> <img
+                            {recordForEdit.afterQues.map((question,index)=> <div><img
                                 src={question}
                                 alt={question}
                                 width='90%'
@@ -434,10 +545,25 @@ export default function Users() {
                                     setOpenAQPopup(false)
                                 }}
 
-                            />)}
+                            />
+                                {localStorage.getItem('Role')=='Admin'?<button className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800" onClick={(e)=>handleImageDelete(e,recordForEdit,question,index,'After')}>Delete</button>:<></>}
+                            </div>)}
                         </div>:<></>}
                     </div>
                 </Dialog>
+                {isViewerOpenQ && (
+                    <ImageViewer
+                        src={recordForEdit.questionnaire}
+                        currentIndex={currentImageQ}
+                        onClose={closeImageViewerQ}
+                        style={{zIndex:100}}
+                        disableScroll={false}
+                        backgroundStyle={{
+                            backgroundColor: "rgba(0,0,0,0.9)"
+                        }}
+                        closeOnClickOutside={true}
+                    />
+                )}
                 {isViewerOpen && (
                     <ImageViewer
                         src={recordForEdit.beforeQues}
@@ -537,7 +663,7 @@ export default function Users() {
                                             {h.total-h.completed}
                                         </td>
                                         <td className={"text-center"}>
-                                            {h.payment?h.payment.price:0}
+                                            {h.payment?h.payment.price+'.00':0}
                                         </td>
                                         <td className={"text-center"}>
                                             <button disabled={h.payment!=null} className={`text-white ${h.payment==null?'bg-blue-700 hover:bg-blue-800':'bg-green-700 disabled'} font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2`}
@@ -574,7 +700,7 @@ export default function Users() {
                                     {getTotalAll()-getTotalCompleted()}
                                 </th>
                                 <th className={"text-center"}>
-                                    {getCostTotal()}
+                                    {getCostTotal()+'.00'}
                                 </th>
                                 <td className={"text-center"}>
                                 </td>

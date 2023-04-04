@@ -34,10 +34,10 @@ function Login(props) {
     async function handleSubmit() {
 
         await signInWithEmailAndPassword(auth,values.email,values.password).then(async(response)=>{
-            console.log(response._tokenResponse.refreshToken)
             const user = await getEmp(values.email)
             localStorage.setItem('Auth Token', response._tokenResponse.refreshToken)
             localStorage.setItem('Role', user.role)
+            localStorage.setItem('employee', (user.firstName + ' ' + user.secondName))
             navigate('/capsules');
         }).catch(err=>{
             console.log(err);
