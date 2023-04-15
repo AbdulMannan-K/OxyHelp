@@ -82,7 +82,6 @@ export default function Employees() {
     },[employee,dateRangeStart,dateRangeEnd,selected])
 
     useEffect(() => {
-        console.log('here')
         const user = localStorage.getItem('Auth Token');
         if (!user) navigate("/login");
     }, [0]);
@@ -96,7 +95,6 @@ export default function Employees() {
     },[records])
 
     const getColor = (capsule,employee)=> {
-        console.log('capsule',capsule)
         if(employee=="") return 'bg-customPink'
         else {
             if (capsule === 'Kapsula 999') return 'bg=customOrange'
@@ -165,12 +163,8 @@ export default function Employees() {
                                 format: 'DD/MM/YYYY'
                             }
                         }} onCallback={(start,end,label)=>{
-                            console.log(new Date(start).toLocaleDateString());
-                            console.log(end);
                             setDateRangeStart(new Date(start).getTime())
                             setDateRangeEnd(new Date(end).getTime())
-                            records.forEach(record=>console.log(record.start));
-                            // setRecordForEdit(recordForEdit.filter(record => new Date(record.start.seconds*1000).getTime()>new Date(start).getTime() && new Date(record.start.seconds*1000).getTime()<new Date(end).getTime()))
                         }
                         }>
                                 <input type="text"

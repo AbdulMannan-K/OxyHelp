@@ -1,11 +1,16 @@
-import { doc,setDoc,getDoc,addDoc,getDocs,collection,deleteDoc } from "firebase/firestore";
+import { doc,setDoc,getDoc,addDoc,getDocs,
+    collection,deleteDoc,Timestamp } from "firebase/firestore";
 import {db} from './firebase';
-import {queries} from "@testing-library/react";
+
+let allEvents = []
 
 export const addUser = async (user,serial) => {
+
+    // serialNumber:serial? ("0000" + serial).slice(-5):user.serialNumber,
+
     try {
         const docRef = await setDoc(doc(db, "clients",user.phoneNumber), {
-            serialNumber:serial? ("0000" + serial).slice(-5):user.serialNumber,
+            serialNumber:serial?serial:user.serialNumber,
             email:user.email,
             firstName:user.firstName.toUpperCase(),
             lastName:user.lastName.toUpperCase(),
@@ -18,8 +23,6 @@ export const addUser = async (user,serial) => {
             beforeQues:user.beforeQues,
             history:user.history,
         });
-        console.log("Document    written with ID: ", docRef);
-        // user.id=docRef;
         return await getUsers();
     } catch (e) {
         console.error("Error adding document: ", e);
@@ -31,8 +34,6 @@ export const getTreatment = async (treatment)=>{
     const docc = doc(db, "treatments", treatment);
     const docSnap = await getDoc(docc);
     let findTreatment = await docSnap.data();
-    console.log('find treatment : ')
-    console.log(findTreatment)
     findTreatment= {...findTreatment,id:docSnap.id};
     return findTreatment
 }
@@ -41,8 +42,6 @@ export const getEvent = async (event_id)=>{
     const docc = doc(db, "events", event_id);
     const docSnap = await getDoc(docc);
     let findEvent = await docSnap.data();
-    console.log('find Event : ')
-    console.log(findEvent)
     findEvent= {...findEvent,event_id:docSnap.id};
     return findEvent;
 }
@@ -53,25 +52,21 @@ export const addTreatment = async (treatment,event,user)=>{
         const docRef = await addDoc(collection(db, "treatments"), {
             total: treatment,
             completed: 0,
-            events:[event],
+            events:[event.event_id],
             currentRegistered: 1,
         });
-        console.log("Document written with ID: ", docRef);
-
         const docc = doc(db, "clients", user);
         const docSnap = await getDoc(docc);
         let findUser = docSnap.data();
         findUser= {...findUser,phoneNumber:docSnap.id};
-
-        console.log('testing testing');
-        console.log(findUser);
+        event.treatmentId = docRef.id;
         // new treatment
         findUser.history.push(docRef.id);
         // prev treatment
         // findUser.history.push({total:aEvent.total,completed:aEvent.})
 
-        // console.log(docSnap);
         await addUser(findUser);
+        await updateStatus(event,event.status)
     } catch (e) {
         console.error("Error adding documenst: ", e);
     }
@@ -85,7 +80,6 @@ export const updateTreatment = async (treatment) => {
             events:treatment.events,
             currentRegistered: treatment.currentRegistered,
         });
-        console.log('done');
     }catch (e) {
         console.log(e);
     }
@@ -100,8 +94,6 @@ export const signUp = async (user) => {
             password:user.password,
             role:user.role
         });
-        console.log("Document    written with ID: ", docRef);
-        // user.id=docRef;
     } catch (e) {
         console.error("Error adding document: ", e);
     }
@@ -116,7 +108,7 @@ export const getEmp= async (emp) => {
 
 
 const addEventsInTreatment = async (treatment,events,user) => {
-    const eventIds = events.map(event => event.id);
+    const eventIds = events.map(event => event.event_id);
     try {
         const docRef = await addDoc(collection(db, "treatments"), {
             total: treatment,
@@ -128,8 +120,10 @@ const addEventsInTreatment = async (treatment,events,user) => {
         const docSnap = await getDoc(docc);
         let findUser = docSnap.data();
         findUser= {...findUser,phoneNumber:docSnap.id};
-        console.log('testing testing');
-        console.log(findUser);
+        for(let i=0 ; i< events.length; i++){
+            events[i].treatmentId = docRef.id;
+            await updateStatus(events[i],events[i].status);
+        }
         findUser.history.push(docRef.id);
         await addUser(findUser);
     } catch (e) {
@@ -139,10 +133,10 @@ const addEventsInTreatment = async (treatment,events,user) => {
 
 const addEventInTreatment = async (treatment,event,user) => {
     try{
-        console.log('Testing 4566 ' + treatment , ' ', event,' ', user)
-        console.log(treatment)
         treatment.events.push(event);
         treatment.currentRegistered++;
+        event.treatmentId = treatment.id;
+        await updateStatus(event,event.status);
         await updateTreatment(treatment);
     }catch (e) {
         console.log("Error adding documents: ",e);
@@ -150,13 +144,34 @@ const addEventInTreatment = async (treatment,event,user) => {
 }
 
 export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
+    let treatmentId = '';
+    try {
+        const docRef = await addDoc(collection(db, "treatments"), {
+            total: treatments,
+            completed: 0,
+            events:[],
+            currentRegistered: treatments,
+        });
+        const docc = doc(db, "clients", user);
+        const docSnap = await getDoc(docc);
+        let findUser = docSnap.data();
+        findUser= {...findUser,phoneNumber:docSnap.id};
+        findUser.history.push(docRef.id);
+        treatmentId=docRef.id;
+        await addUser(findUser);
+    } catch (e) {
+        console.error("Error adding documenst: ", e);
+    }
+
     const eventsDocRef = [];
+    const eventsRefs = [];
     for(let i=0 ; i< treatments; i++){
         try{
             const docRef = await addDoc(collection(db,"events"),{
                 title:events[i].title,
                 color:events[i].color,
                 start:events[i].start,
+                date:events[i].start.toLocaleDateString(),
                 client:events[i].client,
                 employee:events[i].employee,
                 otherClients:events[i].otherClients,
@@ -169,25 +184,40 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
                 comment: events[i].comment,
                 treatmentNumber: i+1,
                 payment: null,
+                treatmentId: treatmentId,
             });
+            eventsDocRef.push(docRef.id);
+            let role = localStorage.getItem('Role');
 
-            eventsDocRef.push(docRef);
+
+            events[i] = {...events[i], event_id:docRef.id, treatmentNumber: i+1, deletable:role==='Admin',completed: 0,total:events[i].treatment};
+            const startTimeStamp = Timestamp.fromDate(events[i].start);
+            const endTimeStamp = Timestamp.fromDate(events[i].end);
+            eventsRefs.push({...events[i],start:startTimeStamp,end:endTimeStamp});
+            events[i] = {...events[i], start:startTimeStamp.toDate(), end:endTimeStamp.toDate()};
         } catch (e){
             console.error("Error adding document : "+ e)
         }
     }
-
-    await addEventsInTreatment(treatments,eventsDocRef,user)
+    allEvents.push(...eventsRefs)
+    const treatment = getDoc(doc(db,"treatments",treatmentId));
+    let treatmentData = (await treatment).data();
+    treatmentData.events = (eventsDocRef);
+    treatmentData = {...treatmentData, id:treatmentId};
+    await updateTreatment(treatmentData);
+    console.log(events);
+    return events;
+    // await addEventsInTreatment(treatments,eventsRefs,user)
 
 }
 
 export const addEvent = async (aEvent,user,newTreatment)=>{
-    console.log(aEvent.repTreatment)
     try {
         const docRef = await addDoc(collection(db, "events"), {
             title:aEvent.title,
             color:aEvent.color,
             start:aEvent.start,
+            date:aEvent.start.toLocaleDateString(),
             client:aEvent.client,
             employee:aEvent.employee,
             otherClients:aEvent.otherClients,
@@ -200,25 +230,25 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
             comment: aEvent.comment,
             treatmentNumber: newTreatment?1:parseInt(aEvent.repTreatment.currentRegistered)+1,
             payment: null,
+            treatmentId: null,
         });
-        console.log("Document written with ID: ", docRef);
+        let role = localStorage.getItem('Role');
 
-        console.log('i am here')
-
-        const docc = doc(db, "clients", user);
-        const docSnap = await getDoc(docc);
-        let findUser = docSnap.data();
-        findUser= {...findUser,phoneNumber:docSnap.id};
-
-        console.log('i am also here')
+        aEvent = {...aEvent,event_id:docRef.id,treatmentNumber: newTreatment?1:parseInt(aEvent.repTreatment.currentRegistered)+1,deletable:role === 'Admin'};
         // new treatment
-        console.log('new treatment : ' + newTreatment)
-        if(newTreatment)
-            await addTreatment(aEvent.treatment,docRef.id,user);
-        else {
-            console.log(aEvent)
-            await addEventInTreatment(aEvent.repTreatment, docRef.id, user);
-        }
+        await addTreatment(aEvent.treatment,aEvent,user);
+
+        let eventToDisplay = JSON.parse(JSON.stringify(aEvent))
+
+        const startTimeStamp = Timestamp.fromDate(aEvent.start);
+        const endTimeStamp = Timestamp.fromDate(aEvent.end);
+        aEvent = {...aEvent,start:startTimeStamp,end:endTimeStamp}
+        allEvents.push(aEvent);
+        console.log('Hello Testing')
+        console.log(allEvents)
+        eventToDisplay = {...eventToDisplay, start:startTimeStamp.toDate(),end:endTimeStamp.toDate(),completed:0,total:aEvent.treatment}
+        console.log(eventToDisplay)
+        return eventToDisplay;
     } catch (e) {
         console.error("Error adding documenst: ", e);
     }
@@ -226,72 +256,93 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
 
 
 export const getEvents = async ()=> {
+    const eventsSnapshot = await getDocs(collection(db, "events"));
+    const treatmentsSnapshot = await getDocs((collection(db, "treatments")));
 
-    const querySnapshot = await getDocs(collection(db, "treatments"));
-    let events = [];
-    for(let i = 0 ; i < querySnapshot.docs.length ; i++){
-        let event_ids = await querySnapshot.docs[i].data().events;
-        for(let j = 0 ; j < event_ids.length ; j++){
-            const docc = doc(db, "events", event_ids[j]);
-            const docSnap = await getDoc(docc);
-            let findEvent = await docSnap.data();
-            findEvent= {...findEvent,event_id:docSnap.id,completed:querySnapshot.docs[i].data().completed,total:querySnapshot.docs[i].data().total};
-            events.push(findEvent);
-        }
-    }
-    // const querySnapshot = await getDocs(collection(db, "events"));
-    // let events = [];
-    // querySnapshot.forEach((doc) => {
-    //     // console.log(doc.id, " => ", doc.data());
-    //     events.push({
-    //         event_id:doc.id,
-    //         ...(doc.data()),
-    //     });
-    // });
-    console.log('Events start')
-    console.log(events);
-    console.log('Events end')
+    const treatments = {};
+    treatmentsSnapshot.docs.forEach(doc => {
+        treatments[doc.id] = doc.data();
+    });
+
+    const events = eventsSnapshot.docs.map(doc => {
+        const eventId = doc.id;
+        const eventData = doc.data();
+        const treatmentData = treatments[eventData.treatmentId];
+
+        return {
+            event_id: eventId,
+            completed: treatmentData.completed,
+            total: treatmentData.total,
+            ...eventData
+        };
+    });
+
+    allEvents=events;
     return events;
 }
 
 export const getEventsOnSpecificDate = async (date,capsule,client) => {
-    let events = await getEvents();
+    console.log('hello Testing 1223')
+    console.log(allEvents);
+    let events = allEvents
     const dateString = (new Date(date)).toLocaleDateString();
-    console.log('date : '+dateString)
-    console.log(events)
     let dateEvents = [];
     for(let i =0 ; i < events.length; i++){
-        console.log(events[i].title+'      '+capsule)
         if((new Date(events[i].start.seconds*1000)).toLocaleDateString()===dateString  &&  (events[i].title===capsule || events[i].client===client)){
             dateEvents.push((new Date(events[i].start.seconds*1000)).toLocaleTimeString())
         }
     }
-    console.log(dateEvents)
     return dateEvents;
     // return events.filter(event => event.start.toLocaleDateString()===dateString);
 }
 
+const getAll = async (docRefs) => {
+    console.log('here here')
+    const promises = docRefs.map((ref) => getDoc(ref));
+    const snapshots = await Promise.all(promises);
+    const docs = snapshots.map  ((snapshot) => {
+        return {
+            id: snapshot.id,
+            ...snapshot.data(),
+        };
+    });
+    return docs;
+};
+
 export const getEventsOfClients = async (docs) => {
-    let events=[];
-    for(let i=0 ;i < docs.length ; i++){
-        const docRef = doc(db, "treatments", docs[i]);
-        const docSnap = await getDoc(docRef);
-        console.log(docSnap.data());
-        for(let j=0 ;j < docSnap.data().events.length ;j++){
-            const docRefE = doc(db, "events", docSnap.data().events[j]);
-            const docSnapE = await getDoc(docRefE);
-            console.log(docSnapE.data());
-            let completed = docSnap.data().completed
-            let total = docSnap.data().total
-            events.push({...docSnapE.data(),event_id:docSnap.data().events[j],completed:completed,total:total,treat_id:docRef.id});
+    const docRefs = docs.map((docId) => doc(db, "treatments", docId));
+    const snapshots = await getAll(docRefs);
+
+    const events = [];
+
+    const eventRefs = snapshots.flatMap((snap) => snap.events.map((eventId) => doc(db, "events", eventId)));
+    const eventSnapshots = await Promise.all(eventRefs.map((ref) => getDoc(ref)));
+
+    for (let i = 0; i < eventSnapshots.length; i++) {
+        const eventSnapshot = eventSnapshots[i];
+        const treatmentSnapshot = snapshots.find((snap) => snap.events.includes(eventSnapshot.id));
+        if (!treatmentSnapshot) {
+            continue;
         }
+        const treatmentData = treatmentSnapshot;
+        const eventCompleted = treatmentData.completed;
+        const eventTotal = treatmentData.total;
+
+        events.push({
+            ...eventSnapshot.data(),
+            event_id: eventSnapshot.id,
+            completed: eventCompleted,
+            total: eventTotal,
+            treat_id: treatmentSnapshot.id,
+        });
     }
-    console.log(events);
+
+    console.log(events)
     return events;
-}
+};
 
 const getColor = (capsule,employee)=> {
-    if(employee) return '#FCA5A5'
+    if(employee=='yes') return '#FCA5A5'
     else {
         if (capsule === 'Kapsula 999') return '#FB923C'
         if (capsule === 'Kapsula 99') return '#FEF08A'
@@ -307,6 +358,7 @@ export const updateStatus = async (aEvent,status) => {
             color: getColor(aEvent.title,aEvent.freeOfCost),
             start: aEvent.start,
             client: aEvent.client,
+            date:aEvent.start.toLocaleDateString(),
             employee: aEvent.employee,
             otherClients: aEvent.otherClients,
             status: status,
@@ -316,14 +368,18 @@ export const updateStatus = async (aEvent,status) => {
             clientName: aEvent.clientName,
             deletable:(status !== 'Completed'),
             comment: aEvent.comment,
-            payment: aEvent.payment,
+            payment: aEvent.payment? aEvent.payment : null,
             treatmentNumber: aEvent.treatmentNumber,
+            treatmentId: aEvent.treatmentId
         });
-        console.log('done');
-        return getEvents();
     }catch (e) {
-        console.log(e);
+        console.error(e);
     }
+    let event = allEvents.find(e => e.event_id === aEvent.event_id);
+    event.start=aEvent.start;
+    event.end=aEvent.end;
+    event.status=status;
+
 }
 
 export const deleteEvent = async (event_id) => {
@@ -335,7 +391,6 @@ export const deleteEvent = async (event_id) => {
     const userSnap = await getDoc(userRef);
 
     for(let i=0 ; i< userSnap.data().history.length ; i++){
-        console.log(userSnap.data().history[i])
         const treatRef = doc(db,"treatments",userSnap.data().history[i])
         const treatDoc = await getDoc(treatRef);
         console.log(treatDoc.data())
@@ -346,28 +401,31 @@ export const deleteEvent = async (event_id) => {
                 treatment.events.splice(j, 1);
                 treatment= {...treatment,id:treatDoc.id};
                 await updateTreatment(treatment);
-                if(treatDoc.data().events.length===1) await deleteDoc(doc(db,"treatments",treatDoc.id))
+                if(treatDoc.data().events.length===1) {
+                    let user = userSnap.data();
+                    user.history.splice(i,1)
+                    user = {...user,phoneNumber:userSnap.id};
+                    console.log(user)
+                    await addUser(user);
+                    await deleteDoc(doc(db, "treatments", treatDoc.id))
+                }
                 break;
             }
         }
     }
-
     await deleteDoc(doc(db, "events", event_id));
+    allEvents = allEvents.filter(element => element !== docSnap.data());
 }
 
 export const getUsers = async ()=> {
     const querySnapshot = await getDocs(collection(db, "clients"));
-    // console.log(typeof querySnapshot)
     let users = [];
     querySnapshot.forEach((doc) => {
-        // console.log(doc.id, " => ", doc.data());
         users.push({
             phoneNumber:doc.id,
             ...(doc.data()),
         })
     });
-    console.log('data here')
-    console.log(users);
     return users;
 }
 
@@ -380,10 +438,8 @@ export const getEventsFromTreatment = async (treatmentId)=>{
     for(let i=0 ;i < docSnapT.data.events.length ; i++){
         const docRef = doc(db, "events", docSnapT.data.events[i]);
         const docSnap = await getDoc(docRef);
-        console.log(docSnap.data());
         events.push(docSnap.data());
     }
-    console.log(events);
     return events;
 
 }
@@ -404,16 +460,35 @@ export const getAllEmployees = async (setRecords)=>{
 export const getEmployees = async (setRecords)=>{
 
     const querySnapshot = await getDocs(collection(db, "events"));
-    // console.log(typeof querySnapshot)
     let employees = [];
     querySnapshot.forEach((doc) => {
-        // console.log(doc.id, " => ", doc.data());
         employees.push({
             id:doc.id,
             ...(doc.data()),
         })
     });
-    console.log(employees);
     setRecords(employees)
 
+}
+
+export const getEventsOnDate = async (startDate,endDate,setRecords)=>{
+    // console.log('Start Date ',Timestamp.fromDate(startDate))
+    // console.log('End Date ',endDate)
+    // let someDate = new Date()
+    // const collectionRef = collection(db, "events");
+    // const q = query(
+    //   collectionRef,
+    //     where("date",">=", (startDate.toLocaleDateString()) ),
+    // );
+    // const querySnapshot = await getDocs(q);
+    // let events = [];
+    // querySnapshot.forEach((doc) => {
+    //     console.log(doc.data().start)
+    //         events.push({
+    //             id: doc.id,
+    //             ...(doc.data()),
+    //         })
+    // }
+    // );
+    // console.log(events)
 }

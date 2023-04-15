@@ -45,6 +45,12 @@ function Login(props) {
         })
 
     }
+
+    const keypress = (e) => {
+        if(e.keyCode === 13){
+            handleSubmit();
+        }
+    }
     // className="flex flex-col gap-4 w-1/3 h-1/1 justify-center align-middle"
     return (
         <div  style={
@@ -74,8 +80,9 @@ function Login(props) {
                 name="password"
                 variant="outlined"
                 type="password"
+                onKeyDown={keypress}
             />
-            <p onClick={()=>navigate('/signup')}>don't have an account? signup</p>
+            <p className="cursor-pointer" onClick={()=>navigate('/signup')}>don't have an account? signup</p>
             <button
                 type="submit"
                 onClick={handleSubmit}

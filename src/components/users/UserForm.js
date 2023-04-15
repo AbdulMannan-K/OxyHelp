@@ -56,7 +56,6 @@ function UserForm(props) {
     function handleSubmit(e){
         e.preventDefault();
         if(validate()){
-            console.log(values);
             props.addItem(values,resetForm);
             // service.addItem(values);
         }

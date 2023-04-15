@@ -62,11 +62,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
         day: new Date(),
         time: 0,
     });
-    const [error, setError] = useState({
-        // title:"",
-        capsule:"",
-        client:"",
-    });
 
     const getClients=async () => {
         setClients(await getUsers())
@@ -76,36 +71,28 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
         getClients()
     },[0])
 
-    useEffect(()=>{
-        getAvailableHours();
-    },[state.capsule,state.day])
 
     const getAvailableHours = async () => {
+        console.log('here')
         const date = (new Date(state.day)).toLocaleDateString();
         const capsule = state.capsule;
         const client = state.client.split(" ")[0]
-        console.log(capsule)
         const appointedSlots = await getEventsOnDate(date,capsule,client);
-        const currentTime = (new Date().toLocaleDateString())===(new Date(state.day)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
-        console.log('Current Time : ' + currentTime);
-        console.log( (new Date().toLocaleDateString()))
-        console.log((new Date(state.day)).toLocaleString())
-        console.log('appointed slots')
         console.log(appointedSlots)
+        const currentTime = (new Date().toLocaleDateString())===(new Date(state.day)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
         let freeSlots = [];
-        for (let i = currentTime; i < 23; i++) {
+        for (let i =7 ; i < 23 ; i++){
+            // for (let i = currentTime; i < 23; i++) {
             let added=false;
             for(let j=0 ; j < appointedSlots.length ;j++){
                 // here we have to check pm am also
                 let time = (appointedSlots[j].split(':'))[0];
-                if(appointedSlots[j].slice(-2)=='PM'){
+                if(appointedSlots[j].slice(-2)=='PM' && time!=12){
                     time=parseInt(time)+12;
-                    console.log('here here here')
                 }
                 if(time!=i){
                     added=true;
                 }else{
-                    console.log('AND Appoineted slot j : '+(appointedSlots[j].split(':'))[0] +"  "+ i)
                     added=false;
                     break;
                 }
@@ -113,44 +100,22 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
             if(added)
                 freeSlots.push(i);
         }
-        console.log('free slots')
-        console.log(freeSlots)
         if(appointedSlots.length===0) {
             for (let i = currentTime; i < 24; i++) {
                 freeSlots.push(i);
             }
         }
-        console.log(freeSlots)
         setAvailableHours(freeSlots);
     }
 
 
     const getEventsOnDate = async (date,capsule,client) => {
-        // console.log('Hello : ' + await getEventsOnSpecificDate(date))
         return (await getEventsOnSpecificDate(date,capsule,client))
     }
 
 
-    const handleChange = (value: string, name: string) => {
-        console.log(value);
-        setError((prev)=>{
-            return {
-                ...prev,
-                [name]: ""
-            }
-        })
-        // if(name==="capsule")
-        //     setAvailableHours(getAvailableHours(value,scheduler.state.start.value));
-        setState((prev) => {
-            return {
-                ...prev,
-                [name]: value
-            };
-        });
-    };
     const handleSubmit = async () => {
 
-        console.log(state);
 
         try {
             scheduler.loading(true);
@@ -184,12 +149,12 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         clientName: event.clientName,
                         comment: event.comment,
                         treatmentNumber: event.treatmentNumber,
+                        treatmentId: event.treatmentId,
                         payment: event.payment,
                     });
-                }, 3000);
+                },10 );
             })) as ProcessedEvent;
 
-            console.log('hello hello hello : ')
             console.log(added_updated_event)
             await updateStatus(added_updated_event,'Reserved');
 
@@ -219,9 +184,15 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
         },
     }));
 
+    const keypress = (e) => {
+        if (e.keyCode === 13) {
+            getAvailableHours();
+        }
+    }
+
     return (
         <div>
-            <div className="m-4">
+            <div className="m-4 flex flex-col">
 
                 <DesktopDatePicker
                     name="date"
@@ -231,9 +202,10 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                     inputFormat="DD/MM/YYYY"
                     value={state.day}
                     onChange={(e)=>setState({...state,'day':e})}
-                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    renderInput={(params) => <TextField onKeyDown={keypress} fullWidth {...params} />}
                     // error={error.day}
                 />
+                <button className="bg-blue-500 mt-4 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="button" onClick={getAvailableHours}>Get Time</button>
 
                 <p className="p-2">Availaible Slots</p>
                 <StyledToggleButtonGroup

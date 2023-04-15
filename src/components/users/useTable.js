@@ -76,7 +76,6 @@ export default function useTable(records, headCells,filterFn) {
     />)
 
     function stableSort(array, comparator) {
-        console.log(array)
         const stabilizedThis = array.map((el, index) => [el, index]);
         stabilizedThis.sort((a, b) => {
             const order = comparator(a[0], b[0]);

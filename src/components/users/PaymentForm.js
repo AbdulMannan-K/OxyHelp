@@ -137,7 +137,7 @@ function PaymentForm(props) {
                     type="submit"
                     onClick={handleSubmit}
                     styles={{margin:"5px"}}
-                >Payaa</Button>
+                >Pay</Button>
             </div>
         </Form>
     );

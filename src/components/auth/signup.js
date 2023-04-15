@@ -122,6 +122,8 @@ function Signup(props) {
                 </Select>
                 <FormHelperText>{errors.capsule}</FormHelperText>
             </FormControl>
+            <p className="cursor-pointer" onClick={()=>navigate('/login')}>Already have an account? login</p>
+
             <button
                 type="submit"
                 onClick={handleSubmit}

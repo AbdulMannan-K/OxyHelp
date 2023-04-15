@@ -152,9 +152,6 @@ export default function Users() {
         setIsViewerOpenA(false);
     }
     const addOrEdit = async (user, resetForm) => {
-        // setRecords([records, item])
-        // console.log((await addUser(user)));
-        console.log("testing 1234 : "+records.length)
         setRecords((await addUser(user,records.length==0?1:records.length+1)));
         setRecordForEdit(null);
         setOpenPopup(false)
@@ -194,7 +191,6 @@ export default function Users() {
         formData.append('client',client.phoneNumber )
         axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
-            console.log(res)
             client.questionnaire.push(res.data)
             setRecords(await addUser(client));
         })
@@ -215,7 +211,6 @@ export default function Users() {
         formData.append('client',client.phoneNumber )
         axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
-            console.log(res)
             client.afterQues.push(res.data)
             setRecords(await addUser(client));
         })
@@ -236,7 +231,6 @@ export default function Users() {
         formData.append('client',client.phoneNumber )
         axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
-            console.log(res)
             client.beforeQues.push(res.data)
             setRecords(await addUser(client));
         })
@@ -247,7 +241,6 @@ export default function Users() {
         let treatments= [];
         for(let i =0 ;i < history.length ; i++){
             if(!treatments.includes(history[i].treat_id)){
-                console.log(history[i].treat_id)
                 treatments.push(history[i].treat_id)
                 total+=history[i].completed
             }
@@ -260,12 +253,10 @@ export default function Users() {
         let treatments= [];
         for(let i =0 ;i < history.length ; i++){
             if(!treatments.includes(history[i].treat_id)){
-                console.log(history[i].treat_id)
                 treatments.push(history[i].treat_id)
                 total+=history[i].total
             }
         }
-        console.log(total)
         return total;
     }
 
@@ -276,16 +267,11 @@ export default function Users() {
     }
 
     async function handleImageDelete(e, recordForEdit, question, index, type) {
-        console.log(recordForEdit)
-        console.log(e)
-        console.log(question)
-        console.log(index)
         if (type == 'After') {
             recordForEdit.afterQues=recordForEdit.afterQues.filter((item) => item != question)
         } else if (type == 'Before') {
             recordForEdit.beforeQues=recordForEdit.beforeQues.filter((item) => item != question)
         } else if (type == 'Question') {
-            console.log('Hello')
             recordForEdit.questionnaire=recordForEdit.questionnaire.filter((item) => item != question)
         }
         setRecords(await addUser(recordForEdit));
@@ -331,7 +317,7 @@ export default function Users() {
                             {
                                 recordsAfterPagingAndSorting().map(user =>
                                     (<TableRow key={user.phoneNumber}>
-                                        <TableCell>{user.serialNumber}</TableCell>
+                                        <TableCell>{("0000" + user.serialNumber).slice(-5)}</TableCell>
                                         <TableCell>{user.firstName}</TableCell>
                                         <TableCell>{user.lastName}</TableCell>
                                         <TableCell>{user.gender}</TableCell>
@@ -381,11 +367,7 @@ export default function Users() {
                                                 onClick={async () => {
                                                     // setCurrentUser(user);
                                                     setHistory(await getEventsOfClients(user.history));
-                                                    console.log('client history and somethign')
                                                     setRecordForEdit(user)
-                                                    // setTreatment(await getEventsOfClients(user.history));
-                                                    console.log(await getEventsOfClients(user.history))
-                                                    console.log(history)
                                                     setOpenHPopup(true);
                                                 }}
                                             ><HistoryIcon fontSize="small"/>
@@ -629,6 +611,9 @@ export default function Users() {
                                     Cost
                                 </th>
                                 <th scope="col" className="px-6 py-3">
+                                    Bill No
+                                </th>
+                                <th scope="col" className="px-6 py-3">
                                     Pay
                                 </th>
                             </tr>
@@ -666,7 +651,10 @@ export default function Users() {
                                             {h.payment?h.payment.price+'.00':0}
                                         </td>
                                         <td className={"text-center"}>
-                                            <button disabled={h.payment!=null} className={`text-white ${h.payment==null?'bg-blue-700 hover:bg-blue-800':'bg-green-700 disabled'} font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2`}
+                                            {h.payment?h.payment.billNumber:0}
+                                        </td>
+                                        <td className={"text-center"}>
+                                            <button disabled={h.status==='Canceled'} className={`text-white ${h.payment==null?'bg-blue-700 hover:bg-blue-800':h.status==='Canceled'?'bg-blue-700 hover:bg-blue-800':'bg-green-700'} font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2`}
                                                 onClick={()=> {
                                                 setCurrentHistory(h);
                                                 setOpenCPopup(true)
@@ -702,6 +690,8 @@ export default function Users() {
                                 <th className={"text-center"}>
                                     {getCostTotal()+'.00'}
                                 </th>
+                                <td className="px-6 py-4">
+                                </td>
                                 <td className={"text-center"}>
                                 </td>
                             </tr>

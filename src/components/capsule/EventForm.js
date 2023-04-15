@@ -40,6 +40,7 @@ const initialValues = {
     repTreatment:'',
     deletable:true,
     comment:'',
+    treatmentId:'',
 }
 
 const capsules = [
@@ -117,7 +118,6 @@ function EventForm(props) {
     };
 
     const delInput = (i) => {
-        console.log(arr.length)
 
             const index = arr.indexOf(i);
             if (index > -1) {
@@ -149,36 +149,30 @@ function EventForm(props) {
     }
 
     const getEventsOnDate = async (date,capsule,client) => {
-        // console.log('Hello : ' + await getEventsOnSpecificDate(date))
         return (await getEventsOnSpecificDate(date,capsule,client))
     }
 
     const getAvailableHours = async () => {
+        console.log('here')
         const date = (new Date(values.start)).toLocaleDateString();
         const capsule = values.title;
         const client = values.client.split(" ")[0]
-        console.log(capsule)
         const appointedSlots = await getEventsOnDate(date,capsule,client);
-        const currentTime = (new Date().toLocaleDateString())===(new Date(values.start)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
-        console.log('Current Time : ' + currentTime);
-        console.log( (new Date().toLocaleDateString()))
-        console.log((new Date(values.start)).toLocaleString())
-        console.log('appointed slots')
         console.log(appointedSlots)
+        const currentTime = (new Date().toLocaleDateString())===(new Date(values.start)).toLocaleDateString() ? new Date().getHours() <7 ? 7 : new Date().getHours() : 7;
         let freeSlots = [];
-        for (let i = currentTime; i < 23; i++) {
+        for (let i =7 ; i < 23 ; i++){
+        // for (let i = currentTime; i < 23; i++) {
             let added=false;
             for(let j=0 ; j < appointedSlots.length ;j++){
                 // here we have to check pm am also
                 let time = (appointedSlots[j].split(':'))[0];
-                if(appointedSlots[j].slice(-2)=='PM'){
+                if(appointedSlots[j].slice(-2)=='PM' && time!=12){
                     time=parseInt(time)+12;
-                    console.log('here here here')
                 }
                 if(time!=i){
                     added=true;
                 }else{
-                    console.log('AND Appoineted slot j : '+(appointedSlots[j].split(':'))[0] +"  "+ i)
                     added=false;
                     break;
                 }
@@ -186,24 +180,17 @@ function EventForm(props) {
             if(added)
                 freeSlots.push(i);
         }
-        console.log('free slots')
-        console.log(freeSlots)
         if(appointedSlots.length===0) {
             for (let i = currentTime; i < 24; i++) {
                 freeSlots.push(i);
             }
         }
-        console.log(freeSlots)
         setAvailableHours(freeSlots);
     }
 
     useEffect(()=>{
         getClients();
     },[0])
-
-    useEffect(()=>{
-        getAvailableHours();
-    },[values.title,values.start])
 
     const getColor = (capsule)=> {
         if(capsule==='Kapsula 999') return '#FB923C'
@@ -212,8 +199,10 @@ function EventForm(props) {
     }
 
     async function handleSubmit(e) {
-        console.log(clients.find(client => client.phoneNumber === values.client));
         e.preventDefault();
+
+        props.triggerLoading(true);
+
         let c= values.client;
         setValues({...values,client:c.split(' ')})
         const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
@@ -226,16 +215,12 @@ function EventForm(props) {
         let newTreatment=false;
         if(values.treatment===1) newTreatment=true;
 
-        console.log('client test : ' + values.client)
         values.client = values.client.split(" ")[0]
         if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
-            console.log('here')
             if (!checked && values.employee === '') {
                 alert('Some thing is not selected')
             } else {
-                console.log(values);
                 if (checked) values.color = '#FCA5A5'
-                console.log(values)
 
                 values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
                 values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
@@ -249,7 +234,6 @@ function EventForm(props) {
                         i--;
                         values.start.setDate(values.start.getDate() + 1)
                     }else {
-                        console.log('checking : ' + i)
                         values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
                         values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime + 1)).setMinutes(0)).setSeconds(0));
                         const newEvent = structuredClone(values);
@@ -258,13 +242,13 @@ function EventForm(props) {
                     }
                 }
 
-                await addMultipleEvents(events,values.client,newTreatment,values.treatment);
+                let addedEvents = await addMultipleEvents(events,values.client,newTreatment,values.treatment);
                 props.openPopup(false);
-                window.location.reload()
-                // props.addItem(values, resetForm,newTreatment);
+                props.setEvents([...props.events,...addedEvents]);
+                props.triggerLoading(false);
+
             }
         } else {
-            console.log('not here' + validate())
             alert('Some thing is not selected')
         }
     }
@@ -299,6 +283,12 @@ function EventForm(props) {
             },
         },
     }));
+
+    const keypress = (e) => {
+        if (e.keyCode === 13) {
+            getAvailableHours();
+        }
+    }
 
     return (
         <Form onSubmit={handleSubmit}>
@@ -339,23 +329,43 @@ function EventForm(props) {
                         }
                         renderInput={(params) => <Input fullWidth {...params} label="Client" />}
                     />
-                    {values.title==='Kapsula 9'?<IconButton onClick={addInput}>
+                    {values.title==='Kapsula 9' && arr.length<3?<IconButton onClick={addInput}>
                         <AddIcon/>
                     </IconButton>:undefined}
                 </div>
+
+                {arr.map((item, i) => {
+                    return (
+                        <div className="flex flex-row">
+                            <Input
+                                onChange={handleChangeArr}
+                                value={item.value}
+                                id={i}
+                                fullWidth
+                                label={item.label}
+                                type={item.type}
+                            />
+                            <IconButton onClick={()=>delInput(item)}>
+                                <CloseIcon/>
+                            </IconButton>
+                        </div>
+                    );
+                })}
 
                 <DesktopDatePicker
                     name="date"
                     label="Date"
                     variant="outlined"
-                    minDate={new Date()}
+                    // minDate={new Date()}
                     inputFormat="DD/MM/YYYY"
                     value={values.start}
                     onChange={(e)=>setValues({...values,'start':e})}
-                    renderInput={(params) => <TextField fullWidth {...params} />}
+                    renderInput={(params) => <TextField onKeyDown={keypress} fullWidth {...params} />}
                     error={errors.start}/>
 
-                    <StyledToggleButtonGroup
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="button" onClick={getAvailableHours}>Get Time</button>
+
+                <StyledToggleButtonGroup
                     size="small"
                     color="primary"
                     value={selectedTime}
@@ -369,26 +379,6 @@ function EventForm(props) {
                         )
                     }
                 </StyledToggleButtonGroup>
-
-
-
-                {arr.map((item, i) => {
-                    return (
-                        <div className="flex flex-row">
-                        <Input
-                            onChange={handleChangeArr}
-                            value={item.value}
-                            id={i}
-                            fullWidth
-                            label={item.label}
-                            type={item.type}
-                        />
-                            <IconButton onClick={()=>delInput(item)}>
-                                <CloseIcon/>
-                            </IconButton>
-                        </div>
-                    );
-                })}
 
                 <div className="flex items-center">
                     <p className="pb-1">Treatment : </p>

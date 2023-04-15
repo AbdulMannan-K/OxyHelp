@@ -51,34 +51,16 @@
   To create a production bundle, use `npm run build` or `yarn build`.
 -->
 <script>
-  $(document).ready(function () {
-    setTimeout(function(){
-      //code goes here
-
-      console.log("Yep working")
-      let allEvents = $('.rs__event__item')
-      // allEvents[58].style.backgroundColor = 'red'
-      // allEvents[58].style.margin = '30px'
-      console.log(allEvents)
-      console.log(allEvents[0])
-      let css = window.getComputedStyle(allEvents[5]);
-      console.log(css)
-      for (let i =0 ; i < allEvents.length ; i++){
-        if(allEvents[i].offsetLeft >0) {
-          if(allEvents[i+1].offsetLeft!=0){
-            allEvents[i].style.left = '33%'
-            allEvents[i++].style.left = '66%'
-          }
-        }
-      }
-      // for (let event in allEvents) {
-      //   console.log(event)
-      //   if(event.offsetLeft >60) {
-      //   }
-      // }
-      console.log('Nope working')
-    }, 1000);
-  })
+  // $(document).ready(function () {
+  //   setTimeout(function(){
+  //       const el1 = document.querySelector('[data-testid="date-navigator"]');
+  //       console.log(el1.children[0])
+  //     el1.children[0].addEventListener('click', function(event) {
+  //         doSomething();
+  //     });
+  //
+  //   },1000);
+  // })
 </script>
 </body>
 </html>
