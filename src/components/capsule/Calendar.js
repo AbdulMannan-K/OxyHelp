@@ -103,6 +103,7 @@ function WeekScheduler() {
     }
 
     const updateEvent = async (event) => {
+        console.log(event)
         const treatment = await getTreatment(event.treatmentId)
         treatment.completed++;
         await updateTreatment(treatment);

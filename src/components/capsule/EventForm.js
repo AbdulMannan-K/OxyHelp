@@ -153,7 +153,6 @@ function EventForm(props) {
     }
 
     const getAvailableHours = async () => {
-        console.log('here')
         const date = (new Date(values.start)).toLocaleDateString();
         const capsule = values.title;
         const client = values.client.split(" ")[0]
@@ -201,6 +200,10 @@ function EventForm(props) {
     async function handleSubmit(e) {
         e.preventDefault();
 
+        if(values.client=='') {
+            alert('Please select a client')
+            return;
+        }
         props.triggerLoading(true);
 
         let c= values.client;
@@ -216,6 +219,7 @@ function EventForm(props) {
         if(values.treatment===1) newTreatment=true;
 
         values.client = values.client.split(" ")[0]
+        console.log('Client value : ',values.client)
         if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
             if (!checked && values.employee === '') {
                 alert('Some thing is not selected')
@@ -297,6 +301,7 @@ function EventForm(props) {
                 <FormControl fullWidth sx={{ minWidth: 120 }} error={!!errors.capsule}>
                     <InputLabel>Capsule</InputLabel>
                     <Select
+                        onKeyDown={keypress}
                         value={values.title}
                         label="Capsule"
                         name="title"
@@ -317,6 +322,7 @@ function EventForm(props) {
 
                 <div className="flex flex-row">
                     <Autocomplete
+                        onKeyDown={keypress}
                         disablePortal
                         name="client"
                         onInputChange={(e,newVal)=>setValues({...values,client:newVal})}

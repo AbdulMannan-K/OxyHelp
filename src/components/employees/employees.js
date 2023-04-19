@@ -97,7 +97,7 @@ export default function Employees() {
     const getColor = (capsule,employee)=> {
         if(employee=="") return 'bg-customPink'
         else {
-            if (capsule === 'Kapsula 999') return 'bg=customOrange'
+            if (capsule === 'Kapsula 999') return 'bg-customOrange'
             if (capsule === 'Kapsula 99') return 'bg-customYellow'
             if (capsule === 'Kapsula 9') {
                 return 'bg-customGreen'

@@ -6,8 +6,6 @@ let allEvents = []
 
 export const addUser = async (user,serial) => {
 
-    // serialNumber:serial? ("0000" + serial).slice(-5):user.serialNumber,
-
     try {
         const docRef = await setDoc(doc(db, "clients",user.phoneNumber), {
             serialNumber:serial?serial:user.serialNumber,
@@ -106,43 +104,6 @@ export const getEmp= async (emp) => {
     return findEmp;
 }
 
-
-const addEventsInTreatment = async (treatment,events,user) => {
-    const eventIds = events.map(event => event.event_id);
-    try {
-        const docRef = await addDoc(collection(db, "treatments"), {
-            total: treatment,
-            completed: 0,
-            events:eventIds,
-            currentRegistered: treatment,
-        });
-        const docc = doc(db, "clients", user);
-        const docSnap = await getDoc(docc);
-        let findUser = docSnap.data();
-        findUser= {...findUser,phoneNumber:docSnap.id};
-        for(let i=0 ; i< events.length; i++){
-            events[i].treatmentId = docRef.id;
-            await updateStatus(events[i],events[i].status);
-        }
-        findUser.history.push(docRef.id);
-        await addUser(findUser);
-    } catch (e) {
-        console.error("Error adding documenst: ", e);
-    }
-}
-
-const addEventInTreatment = async (treatment,event,user) => {
-    try{
-        treatment.events.push(event);
-        treatment.currentRegistered++;
-        event.treatmentId = treatment.id;
-        await updateStatus(event,event.status);
-        await updateTreatment(treatment);
-    }catch (e) {
-        console.log("Error adding documents: ",e);
-    }
-}
-
 export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
     let treatmentId = '';
     try {
@@ -190,7 +151,7 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
             let role = localStorage.getItem('Role');
 
 
-            events[i] = {...events[i], event_id:docRef.id, treatmentNumber: i+1, deletable:role==='Admin',completed: 0,total:events[i].treatment};
+            events[i] = {...events[i], event_id:docRef.id, treatmentNumber: i+1,treatmentId:treatmentId, deletable:role==='Admin',completed: 0,total:events[i].treatment};
             const startTimeStamp = Timestamp.fromDate(events[i].start);
             const endTimeStamp = Timestamp.fromDate(events[i].end);
             eventsRefs.push({...events[i],start:startTimeStamp,end:endTimeStamp});
@@ -429,21 +390,6 @@ export const getUsers = async ()=> {
     return users;
 }
 
-export const getEventsFromTreatment = async (treatmentId)=>{
-
-    const docRefT = doc(db,"treatments",treatmentId)
-    const docSnapT = await getDoc(docRefT);
-
-    let events=[];
-    for(let i=0 ;i < docSnapT.data.events.length ; i++){
-        const docRef = doc(db, "events", docSnapT.data.events[i]);
-        const docSnap = await getDoc(docRef);
-        events.push(docSnap.data());
-    }
-    return events;
-
-}
-
 export const getAllEmployees = async (setRecords)=>{
     const querySnapshot = await getDocs(collection(db, "users"));
     let employees = [];
@@ -469,26 +415,4 @@ export const getEmployees = async (setRecords)=>{
     });
     setRecords(employees)
 
-}
-
-export const getEventsOnDate = async (startDate,endDate,setRecords)=>{
-    // console.log('Start Date ',Timestamp.fromDate(startDate))
-    // console.log('End Date ',endDate)
-    // let someDate = new Date()
-    // const collectionRef = collection(db, "events");
-    // const q = query(
-    //   collectionRef,
-    //     where("date",">=", (startDate.toLocaleDateString()) ),
-    // );
-    // const querySnapshot = await getDocs(q);
-    // let events = [];
-    // querySnapshot.forEach((doc) => {
-    //     console.log(doc.data().start)
-    //         events.push({
-    //             id: doc.id,
-    //             ...(doc.data()),
-    //         })
-    // }
-    // );
-    // console.log(events)
 }

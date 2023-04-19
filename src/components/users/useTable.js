@@ -3,16 +3,6 @@ import {Table, TableHead, TableRow, TableCell, TableSortLabel, tableCellClasses}
 import TablePagination from '@mui/material/TablePagination';
 import { styled } from '@mui/material/styles'
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.light,
-        color: theme.palette.primary.main,
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-    },
-}));
-
 export default function useTable(records, headCells,filterFn) {
 
 
@@ -31,6 +21,7 @@ export default function useTable(records, headCells,filterFn) {
     const TblHead = props => {
 
         const handleSortRequest = cellId => {
+            console.log(cellId)
             const isAsc = orderBy === cellId && order === "asc";
             setOrder(isAsc ? 'desc' : 'asc');
             setOrderBy(cellId)

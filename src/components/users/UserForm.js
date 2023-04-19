@@ -9,6 +9,7 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 
 const initialValues = {
+    serialNumber:0,
     firstName:'',
     lastName:'',
     phoneNumber:'',

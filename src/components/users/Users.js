@@ -49,14 +49,14 @@ const styles = {
 }
 
 const headCells = [
-    { id: 'sr', label:'Sr.'},
+    { id: 'serialNumber', label:'Sr.'},
     { id: 'firstName', label: 'First Name' },
     { id: 'lastName', label: 'Last Name' },
     { id: 'gender', label: 'Gender' },
     { id: 'phoneNumber', label: 'Phone Number' },
     { id: 'email', label: 'Email' },
     { id: 'country', label: 'Country' },
-    { id: 'edit', label: 'Edit' },
+    { id: 'edit', label: 'Edit',disableSorting: true },
     { id: 'questionnaire', label: 'Questionnaire', disableSorting: true },
     { id: 'beforeQues', label: 'Before', disableSorting: true },
     { id: 'afterQues', label: 'After', disableSorting: true },
