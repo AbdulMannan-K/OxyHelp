@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {Table, TableHead, TableRow, TableCell, TableSortLabel, tableCellClasses} from '@mui/material'
+import {Table, TableHead, TableRow, TableCell, TableSortLabel, tableCellClasses,TableContainer} from '@mui/material'
 import TablePagination from '@mui/material/TablePagination';
 import { styled } from '@mui/material/styles'
 
@@ -13,9 +13,11 @@ export default function useTable(records, headCells,filterFn) {
     const [orderBy, setOrderBy] = useState()
 
     const TblContainer = props => (
-        <Table sx={{marginTop: (theme) => theme.spacing(1)}}>
-            {props.children}
-        </Table>
+        <TableContainer>
+            <Table sx={{marginTop: (theme) => theme.spacing(1)}}>
+                {props.children}
+            </Table>
+        </TableContainer>
     )
 
     const TblHead = props => {
