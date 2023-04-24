@@ -380,12 +380,6 @@ export default function Users() {
                     </TblContainer>
                     <TblPagination/>
                 </Paper>
-                <img
-                    src={'https://oxyadmin.gntcgroup.com/public/e56c815b-f5b9-4c9b-af65-425f757dedc4-my_image.jpeg'}
-                    alt={'https://oxyadmin.gntcgroup.com/public/e56c815b-f5b9-4c9b-af65-425f757dedc4-my_image.jpeg'}
-                    width='90%'
-                    style={{cursor:'pointer', display:'inline', margin:10}}
-                />
                 <Popup
                     title="Clients Form"
                     openPopup={openPopup}
@@ -435,7 +429,6 @@ export default function Users() {
                     <div className="min-w-fit">
                         {recordForEdit!==null?<div  className="grid grid-cols-2 justify-evenly gap-10 mt-5 border-2">
                             {recordForEdit.questionnaire.map((question,index)=> <div>
-                                <a href={question}>Image</a>
                                 <img
                                 src={question}
                                 alt={question}
