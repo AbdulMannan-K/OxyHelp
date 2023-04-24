@@ -189,7 +189,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://localhost:4000/", formData, {
+        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.questionnaire.push(res.data)
             setRecords(await addUser(client));
@@ -209,7 +209,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://localhost:4000/", formData, {
+        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.afterQues.push(res.data)
             setRecords(await addUser(client));
@@ -229,7 +229,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://localhost:4000/", formData, {
+        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.beforeQues.push(res.data)
             setRecords(await addUser(client));
@@ -276,7 +276,7 @@ export default function Users() {
         }
         setRecords(await addUser(recordForEdit));
         let imageName = question.split('/');
-        axios.delete(`http://localhost:4000/${imageName[imageName.length - 1]}`, {}).then(async res => {
+        axios.delete(`http://oxyadmin.gntcgroup.com/${imageName[imageName.length - 1]}`, {}).then(async res => {
             console.log(res)
         })
     }
@@ -380,6 +380,12 @@ export default function Users() {
                     </TblContainer>
                     <TblPagination/>
                 </Paper>
+                <img
+                    src={'https://oxyadmin.gntcgroup.com/public/e56c815b-f5b9-4c9b-af65-425f757dedc4-my_image.jpeg'}
+                    alt={'https://oxyadmin.gntcgroup.com/public/e56c815b-f5b9-4c9b-af65-425f757dedc4-my_image.jpeg'}
+                    width='90%'
+                    style={{cursor:'pointer', display:'inline', margin:10}}
+                />
                 <Popup
                     title="Clients Form"
                     openPopup={openPopup}
@@ -428,17 +434,17 @@ export default function Users() {
                     </AppBar>
                     <div className="min-w-fit">
                         {recordForEdit!==null?<div  className="grid grid-cols-2 justify-evenly gap-10 mt-5 border-2">
-                            {recordForEdit.questionnaire.map((question,index)=> <div><img
+                            {recordForEdit.questionnaire.map((question,index)=> <div>
+                                <a href={question}>Image</a>
+                                <img
                                 src={question}
                                 alt={question}
                                 width='90%'
-                                loading="lazy"
                                 style={{cursor:'pointer', display:'inline', margin:10}}
                                 onClick={()=> {
                                     openImageViewerQ(index)
                                     setOpenQPopup(false)
                                 }}
-
                             />
                                 {localStorage.getItem('Role')=='Admin'?<button className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800" onClick={(e)=>handleImageDelete(e,recordForEdit,question,index,'Question')}>Delete</button>:<></>}
                             </div>)}
