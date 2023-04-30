@@ -189,7 +189,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.questionnaire.push(res.data)
             setRecords(await addUser(client));
@@ -209,7 +209,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.afterQues.push(res.data)
             setRecords(await addUser(client));
@@ -229,7 +229,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("http://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.beforeQues.push(res.data)
             setRecords(await addUser(client));
@@ -276,7 +276,7 @@ export default function Users() {
         }
         setRecords(await addUser(recordForEdit));
         let imageName = question.split('/');
-        axios.delete(`http://oxyadmin.gntcgroup.com/${imageName[imageName.length - 1]}`, {}).then(async res => {
+        axios.delete(`https://oxyadmin.gntcgroup.com/${imageName[imageName.length - 1]}`, {}).then(async res => {
             console.log(res)
         })
     }
