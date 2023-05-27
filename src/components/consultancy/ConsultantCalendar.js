@@ -2,12 +2,21 @@ import {Scheduler, useScheduler} from "@aldabil/react-scheduler";
 import React, {Fragment, useCallback, useEffect, useState} from "react";
 import {Button, ToggleButtonGroup, Tooltip} from "@mui/material";
 import Popup from "../controls/Popup";
-import EventForm from "./EventForm";
+import ConsultantEventForm from "./ConsultantEventForm";
 import {
-    addEvent, deleteEvent, getEvents, getEventsOnDate, getTreatment, getUsers, updateStatus, updateTreatment
+    addConsultantEvent,
+    addEvent,
+    deleteEvent,
+    getConsultantEvents,
+    getEvents,
+    getEventsOnDate,
+    getTreatment,
+    getUsers,
+    updateStatus,
+    updateTreatment
 } from "../../services/services";
 import {useNavigate} from "react-router-dom";
-import CustomEditor from "./Form.tsx";
+import CustomEditor from "./ConsultantForm.tsx";
 
 const week = {
     weekDays: [0, 1, 2, 3, 4, 5, 6], weekStartOn: 1, startHour: 7, endHour: 23, step: 60, // navigation: true,
@@ -57,7 +66,7 @@ const month = {
 }
 
 
-function WeekScheduler() {
+function ConsultantCalendar() {
 
     const {events, setEvents, triggerLoading} = useScheduler();
     const [openPopup, setOpenPopup] = useState(false);
@@ -65,7 +74,7 @@ function WeekScheduler() {
 
     const addEvents = async (event, resetForm, newTreatment) => {
         triggerLoading(true);
-        const addedEvent = await addEvent(event, event.client, newTreatment);
+        const addedEvent = await addConsultantEvent(event);
         setEvents([...events, addedEvent]);
         resetForm();
         setOpenPopup(false);
@@ -89,9 +98,9 @@ function WeekScheduler() {
     }
 
 
-    const getAllEvents = async () => {
+    const getAllConsultantEvents = async () => {
         let role = localStorage.getItem('Role');
-        let gevents = ((await getEvents())).map(event => {
+        let gevents = ((await getConsultantEvents())).map(event => {
             return {
                 ...event,
                 start: (new Date(event.start.seconds * 1000)),
@@ -104,21 +113,18 @@ function WeekScheduler() {
 
     const updateEvent = async (event) => {
         console.log(event)
-        const treatment = await getTreatment(event.treatmentId)
-        treatment.completed++;
-        await updateTreatment(treatment);
-        await updateStatus(event, 'Completed');
-        await getAllEvents();
+        // await updateConsultantStatus(event, 'Completed');
+        await getAllConsultantEvents();
     }
 
     const cancelEvent = async (event) => {
-        await updateStatus(event, 'Canceled');
-        await getAllEvents();
+        // await updateConsultantStatus(event, 'Canceled');
+        await getAllConsultantEvents();
     }
 
     const deleteE = async (id) => {
-        await deleteEvent(id);
-        await getAllEvents();
+        // await deleteConsultantEvent(id);
+        await getAllConsultantEvents();
     }
 
     function applyCssBasedOnPosition() {
@@ -145,7 +151,7 @@ function WeekScheduler() {
     }
 
     useEffect(() => {
-        getAllEvents();
+        getAllConsultantEvents();
     }, [0])
 
     useEffect(() => {
@@ -174,7 +180,7 @@ function WeekScheduler() {
             openPopup={openPopup}
             setOpenPopup={setOpenPopup}
         >
-            <EventForm
+            <ConsultantEventForm
                 addItem={addEvents}
                 openPopup={setOpenPopup}
                 setEvents={setEvents}
@@ -201,11 +207,6 @@ function WeekScheduler() {
                         onClick={() => setOpenPopup(true)}
                 >Add Booking
                 </button>
-                <button type="button"
-                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                        onClick={() => navigate('/consultations')}
-                >Consultation
-                </button>
             </div>
 
         </div>
@@ -223,12 +224,6 @@ function WeekScheduler() {
                     <div className="mt-4">
                         <p>Client Name: {event.clientName} </p>
                         <p>Client Phone: {event.client}</p>
-                        {event.otherClients.length !== 0 ? <p>Other Clients: </p> : <></>}
-                        {event.otherClients.map(client => {
-                            return <p>{client}</p>
-                        })}
-                        <p>Treatment Number: {event.treatmentNumber}/{event.treatment}</p>
-                        <p>Completed : {event.completed}/{event.treatment}</p>
                         <p>Employee Name: {event.employee}</p>
                         <p>Comment: {event.comment}</p>
                     </div>
@@ -252,15 +247,15 @@ function WeekScheduler() {
                 return (<div id="eventRender" className="render-event-on-calender">
                         <Tooltip title={<Fragment>
                             <p>{event.title}</p>
-                            <p>{event.client}{event.otherClients.length !== 0 ? ` , ${event.otherClients.length} more` : ''}</p>
+                            <p>{event.clientName}</p>
                         </Fragment>}>
                             <div className="flex flex-col text-black">
                                 <div
                                     className={`h-6 ${event.status === 'Completed' ? 'bg-green-200' : event.status === 'Canceled' ? 'bg-red-400' : 'bg-gray-200'}`}>
-                                    {event.title.split(" ")[1]}
+                                    {event.title}
                                 </div>
                                 <div className="text-sm">
-                                    {event.clientName}{event.otherClients.length !== 0 ? ` , ${event.otherClients.length} more` : ''}
+                                    {event.clientName}
                                 </div>
                             </div>
                         </Tooltip>
@@ -274,4 +269,4 @@ function WeekScheduler() {
 }
 
 
-export {WeekScheduler}
+export default ConsultantCalendar

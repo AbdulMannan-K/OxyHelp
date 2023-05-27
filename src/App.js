@@ -11,6 +11,7 @@ import {createTheme, ThemeProvider} from "@mui/material";
 import Employees from "./components/employees/employees";
 import Login from "./components/auth/login"
 import Signup from "./components/auth/signup";
+import ConsultantCalendar from "./components/consultancy/ConsultantCalendar";
 
 const router = createBrowserRouter([
     {
@@ -18,26 +19,32 @@ const router = createBrowserRouter([
         element: <LocalizationProvider dateAdapter={AdapterDayjs}>
             <div  className=" min-h-screen dark:bg-gray-800">
                 <NavBar></NavBar>
-                <Outlet/>
+                <Outlet />
             </div>
         </LocalizationProvider>,
         children:[
             {
+                path:"/consultations",
+                element: <div className="container flex flex-col gap-4 mb-12">
+                    <ConsultantCalendar/>
+                </div>
+            },
+            {
                 path:"/capsules",
-                element: <div className="container flex flex-col gap-4">
+                element: <div className="container flex flex-col gap-4 mb-12">
                     <CapsuleInfo/>
                     <WeekScheduler/>
                 </div>
             },
             {
                 path:"/clients",
-                element: <div className="container">
+                element: <div className="container mb-12">
                     <Users/>
                 </div>
             },
             {
                 path:"/employees",
-                element: <div className="container">
+                element: <div className="container mb-12">
                     <Employees/>
                 </div>
             },

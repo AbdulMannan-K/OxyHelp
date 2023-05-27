@@ -172,6 +172,27 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
 
 }
 
+export const addConsultantEvent = async (aEvent,user)=>{
+    try {
+        const docRef = await addDoc(collection(db, "consultantEvents"), {
+            title:aEvent.title,
+            start:aEvent.start,
+            date:aEvent.start.toLocaleDateString(),
+            client:aEvent.client,
+            employee:aEvent.employee,
+            status:aEvent.status,
+            freeOfCost:aEvent.freeOfCost,
+            end:aEvent.end,
+            deletable:true,
+            clientName: aEvent.clientName,
+            comment: aEvent.comment,
+        });
+        return aEvent;
+    } catch (e) {
+        console.error("Error adding documenst: ", e);
+    }
+}
+
 export const addEvent = async (aEvent,user,newTreatment)=>{
     try {
         const docRef = await addDoc(collection(db, "events"), {
@@ -215,6 +236,18 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
     }
 }
 
+export const getConsultantEvents = async ()=> {
+    const eventsSnapshot = await getDocs(collection(db, "consultantEvents"));
+    const events = eventsSnapshot.docs.map(doc => {
+        const eventId = doc.id;
+        const eventData = doc.data();
+        return {
+            event_id: eventId,
+            ...eventData
+        };
+    });
+    return events;
+}
 
 export const getEvents = async ()=> {
     const eventsSnapshot = await getDocs(collection(db, "events"));
@@ -242,9 +275,27 @@ export const getEvents = async ()=> {
     return events;
 }
 
+export const getConsultantEventsOnSpecificDate = async (date) => {
+    const eventsSnapshot = await getDocs(collection(db, "consultantEvents"));
+    const cEvents = eventsSnapshot.docs.map(doc => {
+        const eventId = doc.id;
+        const eventData = doc.data();
+        return {
+            event_id: eventId,
+            ...eventData
+        };
+    });
+    const dateString = (new Date(date)).toLocaleDateString();
+    let dateEvents = [];
+    for(let i =0 ; i < cEvents.length; i++){
+        if((new Date(cEvents[i].start.seconds*1000)).toLocaleDateString()===dateString ){
+            dateEvents.push((new Date(cEvents[i].start.seconds*1000)).toLocaleTimeString())
+        }
+    }
+    return dateEvents;
+}
+
 export const getEventsOnSpecificDate = async (date,capsule,client) => {
-    console.log('hello Testing 1223')
-    console.log(allEvents);
     let events = allEvents
     const dateString = (new Date(date)).toLocaleDateString();
     let dateEvents = [];

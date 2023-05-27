@@ -15,33 +15,6 @@ interface CustomEditorProps {
 
 const CustomEditor = ({ scheduler }: CustomEditorProps) => {
 
-    const initialCapsules = [
-        {
-            id:1,
-            name:'Kapsula C3 / Pesona',
-            img:'capsule_one.jpg',
-            description:'capsule is highly effective for breathing and stuff',
-            color:'blue',
-            options: [{text:'R-9',color:'bg-green-400'},{text:'G-9',color:'bg-red-300'}]
-        },
-        {
-            id:2,
-            name:'Kapsula I-90 / 1 Person',
-            img:'capsule_two.jpg',
-            color:'red',
-            description:'capsule is highly effective for breathing and stuff',
-            options: [{text:'R-99',color:'bg-yellow-200'},{text:'G-99',color:'bg-red-300'}]
-        },
-        {
-            id:3,
-            name:'Kapsula I-90 / 2 Person',
-            img:'capsule_three.jpg',
-            color:'green',
-            description:'capsule is highly effective for breathing and stuff',
-            options: [{text:'R-999',color:'bg-orange-400'},{text:'G-999',color:'bg-red-300'}]
-        }
-    ];
-
     const [clients,setClients] = useState([]);
 
     const event = scheduler.edited;
@@ -136,14 +109,10 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         otherClients:event.otherClients,
                         status:'Reserved',
                         freeOfCost:event.freeOfCost,
-                        treatment:event.treatment,
                         end:event.end,
                         deletable:event.deletable,
                         clientName: event.clientName,
                         comment: event.comment,
-                        treatmentNumber: event.treatmentNumber,
-                        treatmentId: event.treatmentId,
-                        payment: event.payment,
                     });
                 },10 );
             })) as ProcessedEvent;
