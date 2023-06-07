@@ -9,9 +9,10 @@ import Users from "./components/users/Users";
 import React from "react";
 import {createTheme, ThemeProvider} from "@mui/material";
 import Employees from "./components/employees/employees";
+import {Employees as EmployeeTable}from "./components/admin/employees";
 import Login from "./components/auth/login"
-import Signup from "./components/auth/signup";
 import ConsultantCalendar from "./components/consultancy/ConsultantCalendar";
+import ConsultancyReports from "./components/consultancy/consultancyReports";
 
 const router = createBrowserRouter([
     {
@@ -30,6 +31,12 @@ const router = createBrowserRouter([
                 </div>
             },
             {
+                path:"/consultations/reports",
+                element: <div className="container flex flex-col gap-4 mb-12">
+                    <ConsultancyReports/>
+                </div>
+            },
+            {
                 path:"/capsules",
                 element: <div className="container flex flex-col gap-4 mb-12">
                     <CapsuleInfo/>
@@ -43,7 +50,7 @@ const router = createBrowserRouter([
                 </div>
             },
             {
-                path:"/employees",
+                path:"/reports",
                 element: <div className="container mb-12">
                     <Employees/>
                 </div>
@@ -55,9 +62,9 @@ const router = createBrowserRouter([
                 </div>
             },
             {
-                path:"/signup",
-                element: <div className="container flex justify-center align-middle ">
-                    <Signup/>
+                path:"/employees",
+                element: <div className="container mb-12">
+                    <EmployeeTable/>
                 </div>
             }
         ]

@@ -4,7 +4,7 @@ import type {
     ProcessedEvent,
     SchedulerHelpers
 } from "@aldabil/react-scheduler/types";
-import {getUsers} from "../../services/services";
+import {getUsers, updateConsultantEvent} from "../../services/services";
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import {styled} from "@mui/material/styles";
 
@@ -118,7 +118,7 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
             })) as ProcessedEvent;
 
             console.log(added_updated_event)
-            await updateStatus(added_updated_event,'Reserved');
+            await updateConsultantEvent(added_updated_event);
 
             scheduler.onConfirm(added_updated_event, event ? "edit" : "create");
             scheduler.close();

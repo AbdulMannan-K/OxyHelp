@@ -54,10 +54,8 @@ function ConsultantEventForm(props) {
     }
 
     const {values,setValues,errors,setErrors,handleInputChange,resetForm} = useForm(initialValues,true,validate);
-    const [clients,setClients] = useState([]);
     const [availableHours,setAvailableHours] = useState([]);
     const [selectedTime,setSelectedTime] = useState(0);
-    const [checked,setChecked] = useState(false);
     const [employees,setEmployees] = useState([]);
     const navigate = useNavigate();
 
@@ -65,10 +63,6 @@ function ConsultantEventForm(props) {
         getAllEmployees(setEmployees)
         setValues({...values,employee:localStorage.getItem('employee')})
     },[0])
-
-    const getClients=async () => {
-        setClients(await getUsers())
-    }
 
     const getEventsOnDate = async (date) => {
         return (await getConsultantEventsOnSpecificDate(date))
@@ -106,14 +100,10 @@ function ConsultantEventForm(props) {
         setAvailableHours(freeSlots);
     }
 
-    useEffect(()=>{
-        getClients();
-    },[0])
-
     async function handleSubmit(e) {
         e.preventDefault();
 
-        if(values.client=='') {
+        if(values.client=='' ) {
             alert('Please select a client')
             return;
         }
@@ -121,26 +111,17 @@ function ConsultantEventForm(props) {
 
         let c= values.client;
         setValues({...values,client:c.split(' ')})
-        const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-
-        values.freeOfCost = checked ? 'yes' : 'no';
-        values.clientName = client.firstName + ' ' + client.lastName;
 
         values.client = values.client.split(" ")[0]
 
         values.title = values.client
         if (selectedTime !== 0 && values.title !== "" && values.client !== "" && values.start !== "") {
-            if (!checked && values.employee === '') {
-                alert('Some thing is not selected')
-            } else {
-                if (checked) values.color = '#FCA5A5'
 
                 values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
                 values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
                 addEvent(values);
                 props.openPopup(false);
                 props.triggerLoading(false);
-            }
         } else {
             alert('Some thing is not selected')
         }
@@ -186,22 +167,24 @@ function ConsultantEventForm(props) {
     return (
         <Form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-3">
-
-                <Autocomplete
-                    onKeyDown={keypress}
-                    disablePortal
-                    name="client"
-                    onInputChange={(e,newVal)=>setValues({...values,client:newVal})}
-                    inputValue={values.client}
-                    fullWidth={true}
-                    options={
-                    clients.map(client=>{
-                        return {label:client.phoneNumber+'  |  '+client.firstName+client.lastName}
-                        })
-                    }
-                    renderInput={(params) => <Input fullWidth {...params} label="Client" />}
+                <Input
+                    onChange={handleInputChange}
+                    value={values.clientName}
+                    fullWidth
+                    label="Client Name"
+                    name="clientName"
+                    variant="outlined"
+                    error={errors.clientName}
                 />
-
+                <Input
+                    onChange={handleInputChange}
+                    value={values.client}
+                    fullWidth
+                    label="Client Phone"
+                    name="client"
+                    variant="outlined"
+                    error={errors.client}
+                />
 
                 <DesktopDatePicker
                     name="date"
@@ -248,8 +231,6 @@ function ConsultantEventForm(props) {
                     </Select>
                     <FormHelperText>{errors.capsule}</FormHelperText>
                 </FormControl>
-
-                <FormControlLabel control={<Switch checked={checked} onChange={(e)=>setChecked(e.target.checked)} />} label="Free Of Cost" />
 
                 <Input
                     onChange={handleInputChange}

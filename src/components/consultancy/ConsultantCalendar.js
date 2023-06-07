@@ -5,13 +5,13 @@ import Popup from "../controls/Popup";
 import ConsultantEventForm from "./ConsultantEventForm";
 import {
     addConsultantEvent,
-    addEvent,
+    addEvent, deleteConsultantEvent,
     deleteEvent,
     getConsultantEvents,
     getEvents,
     getEventsOnDate,
     getTreatment,
-    getUsers,
+    getUsers, updateConsultantEvent,
     updateStatus,
     updateTreatment
 } from "../../services/services";
@@ -112,39 +112,35 @@ function ConsultantCalendar() {
     }
 
     const updateEvent = async (event) => {
-        console.log(event)
         // await updateConsultantStatus(event, 'Completed');
+        event.color='green'
+        event.status='Completed'
+        await updateConsultantEvent(event);
         await getAllConsultantEvents();
     }
 
     const cancelEvent = async (event) => {
         // await updateConsultantStatus(event, 'Canceled');
+        event.color='red'
+        event.status='Canceled'
+        await updateConsultantEvent(event);
         await getAllConsultantEvents();
     }
 
-    const deleteE = async (id) => {
-        // await deleteConsultantEvent(id);
-        await getAllConsultantEvents();
-    }
 
     function applyCssBasedOnPosition() {
             var elements = document.querySelectorAll(".css-z3jy29 .rs__cell .rs__event__item");
-            console.log(elements)
             for (var i = 0; i < elements.length; i++) {
                 var element = elements[i];
                 var rect = element.getBoundingClientRect();
                 let windowHeight = document.querySelectorAll('.css-z3jy29')[0];
                 // var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-                console.log(rect.top, windowHeight.offsetTop,element.offsetTop)
                 // element.height='10px'
                 if (element.offsetTop < (1200) /3) {
-                    console.log("top half");
                     element.style.marginTop = "0px";
                 } else if(element.offsetTop < (1200+(1200/3))/2) {
-                    console.log("middle half")
                     element.style.marginTop = "-10px";
                 }else{
-                    console.log("bottom half")
                     element.style.marginTop = "-17px";
                 }
             }
@@ -204,6 +200,11 @@ function ConsultantCalendar() {
             <div>
                 <button type="button"
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        onClick={() => navigate('/consultations/reports')}
+                >Reports
+                </button>
+                <button type="button"
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                         onClick={() => setOpenPopup(true)}
                 >Add Booking
                 </button>
@@ -217,8 +218,7 @@ function ConsultantCalendar() {
             month={month}
             width={200}
             customEditor={(scheduler) => <CustomEditor scheduler={scheduler}/>}
-            onDelete={(id) => deleteE(id)}
-            onSelectedDateChange={(date) => console.log(date)}
+            onDelete={(id) => deleteConsultantEvent(id)}
             viewerExtraComponent={(fields, event) => {
                 return (<div>
                     <div className="mt-4">

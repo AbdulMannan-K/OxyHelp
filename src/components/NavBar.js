@@ -37,10 +37,15 @@ function NavBar(props) {
                                aria-current="page">Clients</a>
                         </li>
                         <li>
+                            <a onClick={()=>navigate('/reports')}
+                               className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white  cursor-pointer"
+                               aria-current="page">Reports</a>
+                        </li>
+                        {localStorage.getItem('Role')=='Admin'?<li>
                             <a onClick={()=>navigate('/employees')}
                                className="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white  cursor-pointer"
                                aria-current="page">Employees</a>
-                        </li>
+                        </li>:undefined}
                         <li>
                             <a href=''
                                onClick={()=>{

@@ -1,5 +1,5 @@
 import { doc,setDoc,getDoc,addDoc,getDocs,
-    collection,deleteDoc,Timestamp } from "firebase/firestore";
+    collection,deleteDoc,Timestamp,updateDoc } from "firebase/firestore";
 import {db} from './firebase';
 
 let allEvents = []
@@ -90,8 +90,17 @@ export const signUp = async (user) => {
             firstName:user.firstName,
             secondName:user.secondName,
             password:user.password,
-            role:user.role
+            role:user.role,
+            uid:user.uid
         });
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
+
+export const deleteEmployee = async (employee) => {
+    try {
+        await deleteDoc(doc(db, "users", employee));
     } catch (e) {
         console.error("Error adding document: ", e);
     }
@@ -236,7 +245,7 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
     }
 }
 
-export const getConsultantEvents = async ()=> {
+export const getConsultantEvents = async (setRecords)=> {
     const eventsSnapshot = await getDocs(collection(db, "consultantEvents"));
     const events = eventsSnapshot.docs.map(doc => {
         const eventId = doc.id;
@@ -466,4 +475,44 @@ export const getEmployees = async (setRecords)=>{
     });
     setRecords(employees)
 
+}
+
+export const deleteConsultantEvent = async (event_id) => {
+    try {
+        const consultantEvent = doc(db, "consultantEvents", event_id);
+        const consultantEventSnap = await getDoc(consultantEvent);
+        const consultantEventDoc = consultantEventSnap.data();
+        await deleteDoc(doc(db, "consultantEvents", event_id));
+        const docc = doc(db, "clients", consultantEventDoc.client );
+        const docSnap = await getDoc(docc);
+        let findUser = docSnap.data();
+        findUser= {...findUser,phoneNumber:docSnap.id};
+        findUser.consultantHistory = findUser.consultantHistory.filter((event)=>event!==event_id);
+        await addUser(findUser);
+        return event_id;
+    } catch (e) {
+        console.error("Error removing document: ", e);
+    }
+}
+
+export const updateConsultantEvent = async (event) => {
+    try {
+        const docRef = doc(db, "consultantEvents", event.event_id);
+        await updateDoc(docRef, {
+            title:event.title,
+            start:event.start,
+            date:event.start.toLocaleDateString(),
+            client:event.client,
+            employee:event.employee,
+            status:event.status,
+            freeOfCost:event.freeOfCost,
+            end:event.end,
+            deletable:true,
+            clientName: event.clientName,
+            comment: event.comment,
+        });
+        return event;
+    } catch (e) {
+        console.error("Error updating document: ", e);
+    }
 }
