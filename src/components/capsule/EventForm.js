@@ -38,6 +38,7 @@ const initialValues = {
     freeOfCost:'no',
     treatment:1,
     repTreatment:'',
+    meter:0,
     deletable:true,
     comment:'',
     treatmentId:'',
@@ -99,6 +100,7 @@ function EventForm(props) {
     const [availableHours,setAvailableHours] = useState([]);
     const [selectedTime,setSelectedTime] = useState(0);
     const [repTreatment,setRepTreatment] = useState(null);
+    const [meter,setMeter] = useState(0);
     const [arr, setArr] = useState([]);
     const [checked,setChecked] = useState(false);
     const [employees,setEmployees] = useState([]);
@@ -200,6 +202,8 @@ function EventForm(props) {
     async function handleSubmit(e) {
         e.preventDefault();
 
+        console.log(meter)
+
         if(values.client=='') {
             alert('Please select a client')
             return;
@@ -219,7 +223,6 @@ function EventForm(props) {
         if(values.treatment===1) newTreatment=true;
 
         values.client = values.client.split(" ")[0]
-        console.log('Client value : ',values.client)
         if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
             if (!checked && values.employee === '') {
                 alert('Some thing is not selected')
@@ -404,6 +407,31 @@ function EventForm(props) {
                         <ToggleButton value={10}>{10}</ToggleButton>
                         <ToggleButton value={15}>{15}</ToggleButton>
                         <ToggleButton value={20}>{20}</ToggleButton>
+                    </StyledToggleButtonGroup>
+                </div>
+
+                <div className="flex items-center">
+                    <p className="pb-1">Meter : </p>
+                    <StyledToggleButtonGroup
+                        size="small"
+                        color="primary"
+                        value={values.treatment}
+                        exclusive
+                        onChange={(event,newValue)=> {
+                            setMeter(newValue);
+                        }}
+                        aria-label="text alignment"
+                    >
+                        <ToggleButton value={1}>{1}</ToggleButton>
+                        <ToggleButton value={2}>{2}</ToggleButton>
+                        <ToggleButton value={3}>{3}</ToggleButton>
+                        <ToggleButton value={4}>{4}</ToggleButton>
+                        <ToggleButton value={5}>{5}</ToggleButton>
+                        <ToggleButton value={6}>{6}</ToggleButton>
+                        <ToggleButton value={7}>{7}</ToggleButton>
+                        <ToggleButton value={8}>{8}</ToggleButton>
+                        <ToggleButton value={9}>{9}</ToggleButton>
+                        <ToggleButton value={10}>{10}</ToggleButton>
                     </StyledToggleButtonGroup>
                 </div>
 
