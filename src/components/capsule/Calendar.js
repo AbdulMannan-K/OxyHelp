@@ -96,7 +96,7 @@ function WeekScheduler() {
                 ...event,
                 start: (new Date(event.start.seconds * 1000)),
                 end: new Date(event.end.seconds * 1000),
-                deletable: role === 'Admin',
+                deletable: true,
             }
         })
         setEvents(gevents);
@@ -123,22 +123,17 @@ function WeekScheduler() {
 
     function applyCssBasedOnPosition() {
             var elements = document.querySelectorAll(".css-z3jy29 .rs__cell .rs__event__item");
-            console.log(elements)
             for (var i = 0; i < elements.length; i++) {
                 var element = elements[i];
                 var rect = element.getBoundingClientRect();
                 let windowHeight = document.querySelectorAll('.css-z3jy29')[0];
                 // var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-                console.log(rect.top, windowHeight.offsetTop,element.offsetTop)
                 // element.height='10px'
                 if (element.offsetTop < (1200) /3) {
-                    console.log("top half");
                     element.style.marginTop = "0px";
                 } else if(element.offsetTop < (1200+(1200/3))/2) {
-                    console.log("middle half")
                     element.style.marginTop = "-10px";
                 }else{
-                    console.log("bottom half")
                     element.style.marginTop = "-17px";
                 }
             }

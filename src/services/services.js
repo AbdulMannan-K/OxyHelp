@@ -271,13 +271,21 @@ export const getEvents = async ()=> {
         const eventId = doc.id;
         const eventData = doc.data();
         const treatmentData = treatments[eventData.treatmentId];
-
-        return {
-            event_id: eventId,
-            completed: treatmentData.completed,
-            total: treatmentData.total,
-            ...eventData
-        };
+        if(treatmentData) {
+            return {
+                event_id: eventId,
+                completed: treatmentData.completed,
+                total: treatmentData.total,
+                ...eventData
+            };
+        }else{
+            return {
+                event_id: eventId,
+                completed: 0,
+                total: 0,
+                ...eventData
+            };
+        }
     });
 
     allEvents=events;
