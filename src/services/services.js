@@ -219,6 +219,7 @@ export const addEvent = async (aEvent,user,newTreatment)=>{
             deletable:true,
             clientName: aEvent.clientName,
             comment: aEvent.comment,
+            meter:aEvent.meter,
             treatmentNumber: newTreatment?1:parseInt(aEvent.repTreatment.currentRegistered)+1,
             payment: null,
             treatmentId: null,

@@ -129,13 +129,12 @@ function EventForm(props) {
 
     }
 
-    const handleChangeArr = e => {
+    const handleChangeArr = (e,i,newVal) => {
         e.preventDefault();
-
-        const index = e.target.id;
+        const index = i;
         setArr(s => {
             const newArr = s.slice();
-            newArr[index].value = e.target.value;
+            newArr[index].value = newVal;
             return newArr;
         });
     };
@@ -218,6 +217,7 @@ function EventForm(props) {
         values.freeOfCost = checked ? 'yes' : 'no';
         values.clientName = client.firstName + ' ' + client.lastName;
         values.color = getColor(values.title);
+        values.meter = meter;
 
         let newTreatment=false;
         if(values.treatment===1) newTreatment=true;
@@ -346,13 +346,20 @@ function EventForm(props) {
                 {arr.map((item, i) => {
                     return (
                         <div className="flex flex-row">
-                            <Input
-                                onChange={handleChangeArr}
-                                value={item.value}
-                                id={i}
-                                fullWidth
-                                label={item.label}
-                                type={item.type}
+                            <Autocomplete
+                            onKeyDown={keypress}
+                            id={i}
+                            disablePortal
+                            name={item.label}
+                            onInputChange={(e,newVal)=>handleChangeArr(e,i,newVal)}
+                            inputValue={item.value}
+                            fullWidth={true}
+                            options={
+                            clients.map(client=>{
+                                return {label:client.phoneNumber+'  |  '+client.firstName+client.lastName}
+                            })
+                            }
+                            renderInput={(params) => <Input fullWidth {...params} label="Client" />}
                             />
                             <IconButton onClick={()=>delInput(item)}>
                                 <CloseIcon/>
@@ -415,7 +422,7 @@ function EventForm(props) {
                     <StyledToggleButtonGroup
                         size="small"
                         color="primary"
-                        value={values.treatment}
+                        value={meter}
                         exclusive
                         onChange={(event,newValue)=> {
                             setMeter(newValue);
