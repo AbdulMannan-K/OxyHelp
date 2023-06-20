@@ -225,6 +225,7 @@ function WeekScheduler() {
                         <p>Treatment Number: {event.treatmentNumber}/{event.treatment}</p>
                         <p>Completed : {event.completed}/{event.treatment}</p>
                         <p>Employee Name: {event.employee}</p>
+                        <p>{event.meter?'Meter : '+event.meter:''}</p>
                         <p>Comment: {event.comment}</p>
                     </div>
                     <div className="mt-4">
