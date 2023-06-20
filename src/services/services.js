@@ -398,6 +398,7 @@ export const updateStatus = async (aEvent,status) => {
             clientName: aEvent.clientName,
             deletable:(status !== 'Completed'),
             comment: aEvent.comment,
+            meter: aEvent.meter,
             payment: aEvent.payment? aEvent.payment : null,
             treatmentNumber: aEvent.treatmentNumber,
             treatmentId: aEvent.treatmentId
