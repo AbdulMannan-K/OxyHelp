@@ -5,7 +5,7 @@ import {
     TableBody,
     TableCell,
     InputAdornment,
-    Typography, Input, Button, TableRow, ImageListItem, ImageList, Slide, Toolbar
+    Typography, Input, Button, TableRow, ImageListItem, ImageList, Slide, Toolbar, Badge
 } from '@mui/material';
 import { Search } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
@@ -152,7 +152,7 @@ export default function Users() {
         setIsViewerOpenA(false);
     }
     const addOrEdit = async (user, resetForm) => {
-        setRecords((await addUser(user,records.length==0?1:records.length+1)));
+        setRecords((await addUser(user,records.length==0?1:records.length+1,!!recordForEdit)));
         setRecordForEdit(null);
         setOpenPopup(false)
         setOpenBQPopup(false);
@@ -332,6 +332,7 @@ export default function Users() {
                                             </IconButton>
                                         </TableCell>
                                         <TableCell >
+                                            <Badge badgeContent={user.questionnaire.length} color="primary">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => {
@@ -340,8 +341,11 @@ export default function Users() {
                                                 }}
                                             ><VisibilityIcon fontSize="small"/>
                                             </IconButton>
+                                            </Badge>
+
                                         </TableCell>
                                         <TableCell >
+                                            <Badge badgeContent={user.beforeQues.length} color="primary">
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => {
@@ -350,8 +354,11 @@ export default function Users() {
                                                 }}
                                             ><QuestionMarkIcon fontSize="small"/>
                                             </IconButton>
+                                            </Badge>
                                         </TableCell>
                                         <TableCell >
+                                            <Badge badgeContent={user.afterQues.length} color="primary">
+
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => {
@@ -360,6 +367,7 @@ export default function Users() {
                                                 }}
                                             ><HelpIcon fontSize="medium"/>
                                             </IconButton>
+                                            </Badge>
                                         </TableCell>
                                         <TableCell >
                                             <IconButton

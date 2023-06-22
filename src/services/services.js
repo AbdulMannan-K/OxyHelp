@@ -4,7 +4,11 @@ import {db} from './firebase';
 
 let allEvents = []
 
-export const addUser = async (user,serial) => {
+export const addUser = async (user,serial,edit) => {
+
+    if(edit){
+        await deleteDoc(doc(db, "clients",user.phoneNumber));
+    }
 
     try {
         const docRef = await setDoc(doc(db, "clients",user.phoneNumber), {
@@ -457,6 +461,8 @@ export const getUsers = async ()=> {
             ...(doc.data()),
         })
     });
+    users.sort((a,b)=>a.serialNumber-b.serialNumber);
+    users = users.map((user,index)=>({...user,serialNumber:index+1}))
     return users;
 }
 
