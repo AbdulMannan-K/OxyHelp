@@ -1,10 +1,18 @@
 import {Scheduler, useScheduler} from "@aldabil/react-scheduler";
-import React, {Fragment, useCallback, useEffect, useState} from "react";
+import React, {Fragment, useCallback, useEffect, useRef, useState} from "react";
 import {Button, ToggleButtonGroup, Tooltip} from "@mui/material";
 import Popup from "../controls/Popup";
 import EventForm from "./EventForm";
 import {
-    addEvent, deleteEvent, getEvents, getEventsOnDate, getTreatment, getUsers, updateStatus, updateTreatment
+    addEvent,
+    deleteEvent,
+    getEvents,
+    getEventsByDateRange,
+    getEventsOnDate,
+    getTreatment,
+    getUsers,
+    updateStatus,
+    updateTreatment
 } from "../../services/services";
 import {useNavigate} from "react-router-dom";
 import CustomEditor from "./Form.tsx";
@@ -59,7 +67,7 @@ const month = {
 
 function WeekScheduler() {
 
-    const {events, setEvents, triggerLoading} = useScheduler();
+    const {events, setEvents, triggerLoading,view} = useScheduler();
     const [openPopup, setOpenPopup] = useState(false);
     const navigate = useNavigate();
 
@@ -101,6 +109,64 @@ function WeekScheduler() {
         })
         setEvents(gevents);
     }
+    function getMonthFromString(mon){
+        return new Date(Date.parse(mon +" 1, 2012")).getMonth()+1
+    }
+    const getEventsByDate=(viewMode)=>{
+        if(viewMode=='month'){
+            let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
+            let month = getMonthFromString(dateString.split(' ')[0]) - 1
+            let year = parseInt(dateString.split(' ')[1].split('<')[0])
+            let startDateTime = new Date((year), (month-1), 25)
+            let endDateTime = new Date((year), (month) + 1, 0)
+            console.log(month, year, startDateTime, endDateTime)
+        }else if(viewMode=='week') {
+
+            let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
+
+            let day = parseInt(dateString.split(' ')[0])
+            let end = parseInt(dateString.split(' ')[2].split('<')[0])
+            let month = getMonthFromString(dateString.split(' ')[3]) - 1
+            let year = parseInt(dateString.split(' ')[4].split('<')[0])
+            if(day>end){
+                month=month-1
+            }
+            let startDateTime = new Date((year), (month), (day))
+            let endDateTime = new Date((year), (month), (day) + 7)
+            getEventsByDateRange(startDateTime, endDateTime, setEvents)
+        }else if(viewMode=='day'){
+            let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
+            let day = parseInt(dateString.split(' ')[0])
+            let month = getMonthFromString(dateString.split(' ')[1]) - 1
+            let year = parseInt(dateString.split(' ')[2].split('<')[0])
+            let startDateTime = new Date((year), (month), (day))
+            let endDateTime = new Date((year), (month), (day+1))
+            getEventsByDateRange(startDateTime, endDateTime, setEvents)
+        }
+    }
+
+    function useInterval(callback, delay) {
+        const savedCallback = useRef();
+        // Remember the latest callback.
+        useEffect(() => {
+            savedCallback.current = callback;
+        }, [callback]);
+
+        // Set up the interval.
+        useEffect(() => {
+            function tick() {
+                savedCallback.current();
+            }
+            if (delay !== null) {
+                let id = setInterval(tick, delay);
+                return () => clearInterval(id);
+            }
+        }, [delay]);
+    }
+
+    useInterval(() => {
+        getEventsByDate(view)
+    }, 500);
 
     const updateEvent = async (event) => {
         console.log(event)

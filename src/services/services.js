@@ -33,6 +33,7 @@ export const addUser = async (user,serial,edit) => {
 
 export const getTreatment = async (treatment)=>{
 
+
     const docc = doc(db, "treatments", treatment);
     const docSnap = await getDoc(docc);
     let findTreatment = await docSnap.data();
@@ -117,6 +118,21 @@ export const getEmp= async (emp) => {
     return findEmp;
 }
 
+export const getEventsByDateRange = (start,end,setEvents) => {
+    console.log(start,end)
+    console.log(allEvents[0])
+    let eventsFiltered = allEvents.filter(event => (new Date(event.start.seconds*1000)) >= start && (new Date(event.start.seconds*1000)) <= end);
+    eventsFiltered = ((eventsFiltered)).map(event => {
+        return {
+            ...event,
+            start: (new Date(event.start.seconds * 1000)),
+            end: new Date(event.end.seconds * 1000),
+            deletable: true,
+        }
+    })
+    setEvents(eventsFiltered);
+}
+
 export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
     let treatmentId = '';
     try {
@@ -142,23 +158,7 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
     for(let i=0 ; i< treatments; i++){
         try{
             const docRef = await addDoc(collection(db,"events"),{
-                title:events[i].title,
-                color:events[i].color,
-                start:events[i].start,
-                date:events[i].start.toLocaleDateString(),
-                client:events[i].client,
-                employee:events[i].employee,
-                otherClients:events[i].otherClients,
-                status:events[i].status,
-                freeOfCost:events[i].freeOfCost,
-                treatment:events[i].treatment,
-                end:events[i].end,
-                deletable:true,
-                clientName: events[i].clientName,
-                comment: events[i].comment,
-                treatmentNumber: i+1,
-                payment: null,
-                treatmentId: treatmentId,
+
             });
             eventsDocRef.push(docRef.id);
             let role = localStorage.getItem('Role');
