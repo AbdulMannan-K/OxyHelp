@@ -244,7 +244,7 @@ function EventForm(props) {
                         values.start.setDate(values.start.getDate() + 1)
                     }else {
                         values.start = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime)).setMinutes(0)).setSeconds(0));
-                        values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime + 1)).setMinutes(0)).setSeconds(0));
+                        values.end = new Date(new Date(new Date((new Date(values.start)).setHours(selectedTime==23?23:selectedTime+1)).setMinutes(selectedTime==23?59:0)).setSeconds(0));
                         const newEvent = structuredClone(values);
                         events.push(newEvent);
                         values.start.setDate(values.start.getDate() + 1)

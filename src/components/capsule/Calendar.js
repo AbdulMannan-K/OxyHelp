@@ -6,8 +6,7 @@ import EventForm from "./EventForm";
 import {
     addEvent,
     deleteEvent,
-    getEvents,
-    getEventsByDateRange,
+    getEvents, getEventsByDateRange,
     getEventsOnDate,
     getTreatment,
     getUsers,
@@ -16,6 +15,10 @@ import {
 } from "../../services/services";
 import {useNavigate} from "react-router-dom";
 import CustomEditor from "./Form.tsx";
+import axios from "axios";
+import { doc,setDoc,getDoc,addDoc,getDocs,
+    collection,deleteDoc,Timestamp,updateDoc } from "firebase/firestore";
+import {db} from '../../services/firebase';
 
 const week = {
     weekDays: [0, 1, 2, 3, 4, 5, 6], weekStartOn: 1, startHour: 7, endHour: 23, step: 60, // navigation: true,
@@ -121,9 +124,7 @@ function WeekScheduler() {
             let endDateTime = new Date((year), (month) + 1, 0)
             console.log(month, year, startDateTime, endDateTime)
         }else if(viewMode=='week') {
-
             let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
-
             let day = parseInt(dateString.split(' ')[0])
             let end = parseInt(dateString.split(' ')[2].split('<')[0])
             let month = getMonthFromString(dateString.split(' ')[3]) - 1
@@ -164,9 +165,9 @@ function WeekScheduler() {
         }, [delay]);
     }
 
-    useInterval(() => {
-        getEventsByDate(view)
-    }, 500);
+    // useInterval(() => {
+    //     getEventsByDate(view)
+    // }, 500);
 
     const updateEvent = async (event) => {
         console.log(event)
@@ -183,6 +184,7 @@ function WeekScheduler() {
     }
 
     const deleteE = async (id) => {
+        console.log(id)
         await deleteEvent(id);
         await getAllEvents();
     }
@@ -206,6 +208,21 @@ function WeekScheduler() {
     }
 
     useEffect(() => {
+        let button1 = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[0])
+        let button2 = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[2])
+        button1.addEventListener('click', () => {
+            console.log('here')
+            setTimeout(() => {
+                getEventsByDate(view)
+            } , 500)
+        })
+        button2.addEventListener('click', () => {
+            console.log('here')
+            setTimeout(() => {
+                getEventsByDate(view)
+            } , 500)
+        }
+        )
         getAllEvents();
     }, [0])
 
@@ -256,6 +273,88 @@ function WeekScheduler() {
                     Canceled
                 </li>
             </div>
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const querySnapshot = await getDocs(collection(db, "clients"));*/}
+            {/*        let users = [];*/}
+            {/*        querySnapshot.forEach((doc) => {*/}
+            {/*            users.push({*/}
+            {/*                phoneNumber: doc.id,*/}
+            {/*                ...(doc.data()),*/}
+            {/*            })*/}
+            {/*        });*/}
+
+            {/*        // add all these users into mongodb using axios*/}
+            {/*        users.forEach(async (user) => {*/}
+            {/*            await axios.post('http://localhost:4000/users', user)*/}
+            {/*        })*/}
+
+            {/*    }}*/}
+            {/*>Export to mongodb clients</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*      const querySnapshot = await getDocs(collection(db, "events"));*/}
+            {/*        let events = [];*/}
+            {/*        events = querySnapshot.docs.map(doc => {*/}
+            {/*            const eventId = doc.id;*/}
+            {/*            const eventData = doc.data();*/}
+            {/*            return {*/}
+            {/*                event_id: eventId,*/}
+            {/*                ...eventData,*/}
+            {/*                start: (new Date(eventData.start.seconds * 1000)),*/}
+            {/*                end: new Date(eventData.end.seconds * 1000),*/}
+            {/*                clientId: eventData.client,*/}
+            {/*            };*/}
+            {/*        });*/}
+
+            {/*        // add all these events into mongodb using axios*/}
+            {/*        events.forEach(async (event) => {*/}
+            {/*            console.log(event)*/}
+            {/*            await axios.post('http://localhost:4000/capsules', event)*/}
+            {/*        })*/}
+
+            {/*    }}*/}
+            {/*>Export to mongodb events</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const querySnapshot = await getDocs(collection(db, "treatments"));*/}
+            {/*        let treatments = [];*/}
+            {/*        querySnapshot.forEach((doc) => {*/}
+            {/*            treatments.push({*/}
+            {/*                treatmentId: doc.id,*/}
+            {/*                ...(doc.data()),*/}
+            {/*            })*/}
+            {/*        });*/}
+
+            {/*        // add all these treatments into mongodb using axios*/}
+            {/*        treatments.forEach(async (treatment) => {*/}
+            {/*            console.log(treatment)*/}
+            {/*            await axios.post('http://localhost:4000/treatments', treatment)*/}
+            {/*        })*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    Export to mongodb treatments*/}
+            {/*</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const events = (await axios.get('http://localhost:4000/capsules')).data;*/}
+            {/*        const clients = (await axios.get('http://localhost:4000/users')).data;*/}
+            {/*        const updatedEvents = events.map((event) => {*/}
+            {/*            const client = clients.find(client => client.phoneNumber === event.clientId);*/}
+            {/*            return{*/}
+            {/*                ...event,*/}
+            {/*                clientId: client._id,*/}
+            {/*            }*/}
+            {/*        }*/}
+            {/*        )*/}
+            {/*        updatedEvents.forEach(async (event) => {*/}
+            {/*            console.log(event)*/}
+            {/*            await axios.put(`http://localhost:4000/capsules/${event._id}`, event)*/}
+            {/*        })*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    link client id to events*/}
+            {/*</button>*/}
             <div>
                 <button type="button"
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"

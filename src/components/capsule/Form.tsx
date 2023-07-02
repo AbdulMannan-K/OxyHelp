@@ -66,7 +66,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
 
 
     const getAvailableHours = async () => {
-        console.log('here')
         const date = (new Date(state.day)).toLocaleDateString();
         const capsule = state.capsule;
         const client = state.client.split(" ")[0]
@@ -109,7 +108,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
 
     const handleSubmit = async () => {
 
-
         try {
             scheduler.loading(true);
 
@@ -140,6 +138,7 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                         end:event.end,
                         deletable:event.deletable,
                         clientName: event.clientName,
+                        clientId: event.clientId,
                         comment: event.comment,
                         treatmentNumber: event.treatmentNumber,
                         treatmentId: event.treatmentId,
@@ -148,7 +147,6 @@ const CustomEditor = ({ scheduler }: CustomEditorProps) => {
                 },10 );
             })) as ProcessedEvent;
 
-            console.log(added_updated_event)
             await updateStatus(added_updated_event,'Reserved');
 
             scheduler.onConfirm(added_updated_event, event ? "edit" : "create");

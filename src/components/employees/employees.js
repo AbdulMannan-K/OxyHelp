@@ -193,9 +193,9 @@ export default function Employees() {
                                     <TableCell>
                                         <p className={`rounded-full px-6 py-2 w-2/3 text-black ${getColor(record.title,record.employee)}`}>{record.title}</p>
                                     </TableCell>
-                                    <TableCell>{new Date(record.start.seconds*1000).toLocaleDateString("en-GB")}</TableCell>
-                                    <TableCell>{new Date(record.start.seconds*1000).toLocaleTimeString("en-GB")}</TableCell>
-                                    <TableCell>{new Date(record.end.seconds*1000).toLocaleTimeString("en-GB")}</TableCell>
+                                    <TableCell>{new Date(record.start).toLocaleDateString("en-GB")}</TableCell>
+                                    <TableCell>{new Date(record.start).toLocaleTimeString("en-GB")}</TableCell>
+                                    <TableCell>{new Date(record.end).toLocaleTimeString("en-GB")}</TableCell>
                                     <TableCell>
                                         <p className={`rounded-full px-6 py-2 w-1/2 text-white ${record.status == 'Reserved' ? 'bg-blue-800' : record.status == 'Completed' ? 'bg-green-700' : 'bg-red-500'}`}>{record.status}</p>
                                     </TableCell>

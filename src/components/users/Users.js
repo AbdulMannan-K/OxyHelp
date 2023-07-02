@@ -49,7 +49,7 @@ const styles = {
 }
 
 const headCells = [
-    { id: 'serialNumber', label:'Sr.'},
+    { id: 'nr', label:'Sr.'},
     { id: 'firstName', label: 'First Name' },
     { id: 'lastName', label: 'Last Name' },
     { id: 'gender', label: 'Gender' },
@@ -325,7 +325,7 @@ export default function Users() {
                             {
                                 recordsAfterPagingAndSorting().map(user =>
                                     (<TableRow key={user.phoneNumber}>
-                                        <TableCell>{("0000" + user.serialNumber).slice(-5)}</TableCell>
+                                        <TableCell>{("0000" + user.nr).slice(-5)}</TableCell>
                                         <TableCell>{user.firstName}</TableCell>
                                         <TableCell>{user.lastName}</TableCell>
                                         <TableCell>{user.gender}</TableCell>

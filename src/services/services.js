@@ -545,6 +545,18 @@ export const addEvent = async (aEvent, user, newTreatment) => {
     }
 };
 
+export const getEventsByDateRange = (start,end,setEvents) => {
+    let eventsFiltered = allEvents.filter(event => (new Date(event.start)) >= start && (new Date(event.start)) <= end);
+    eventsFiltered = eventsFiltered.map(event => {
+        return {
+            ...event,
+            start: new Date(event.start),
+            end: new Date(event.end)
+        }
+    }
+    );
+    setEvents(eventsFiltered);
+}
 
 export const getConsultantEvents = async (setRecords)=> {
     const eventsSnapshot = await getDocs(collection(db, "consultantEvents"));
@@ -672,8 +684,8 @@ export const getEventsOnSpecificDate = async (date,capsule,client) => {
     const dateString = (new Date(date)).toLocaleDateString();
     let dateEvents = [];
     for(let i =0 ; i < events.length; i++){
-        if((new Date(events[i].start.seconds*1000)).toLocaleDateString()===dateString  &&  (events[i].title===capsule || events[i].client===client)){
-            dateEvents.push((new Date(events[i].start.seconds*1000)).toLocaleTimeString())
+        if((new Date(events[i].start)).toLocaleDateString()===dateString  &&  (events[i].title===capsule || events[i].client===client)){
+            dateEvents.push((new Date(events[i].start)).toLocaleTimeString())
         }
     }
     return dateEvents;
@@ -846,10 +858,10 @@ export const updateStatus = async (aEvent, status) => {
 
         await axios.put(`http://localhost:4000/capsules/${aEvent.event_id}`, eventData);
 
-        // let event = allEvents.find(e => e.event_id === aEvent.event_id);
-        // event.start = aEvent.start;
-        // event.end = aEvent.end;
-        // event.status = status;
+        let event = allEvents.find(e => e.event_id === aEvent.event_id);
+        event.start = aEvent.start;
+        event.end = aEvent.end;
+        event.status = status;
     } catch (error) {
         console.error('Error updating event status: ', error);
     }
@@ -899,22 +911,23 @@ export const deleteEvent = async (event_id) => {
         const user = await axios.get(`http://localhost:4000/users/${eventData.clientId}`);
         const userData = user.data;
 
-        console.log('user Data : ')
-        console.log(userData)
-
         for (let i = 0; i < userData.history.length; i++) {
             const treatment = await axios.get(`http://localhost:4000/treatments/${userData.history[i]}`);
             const treatmentData = treatment.data;
-
-            console.log('treatmentData: ')
-            console.log(treatmentData);
 
             if (treatmentData.events.includes(event_id)) {
                 treatmentData.events = treatmentData.events.filter(id => id !== event_id);
                 await axios.put(`http://localhost:4000/treatments/${treatmentData._id}`, treatmentData);
 
-                if (treatmentData.events.length === 1) {
+                console.log('Length : ',treatmentData.events.length);
+
+                if (treatmentData.events.length === 0) {
+                    console.log('History : ',userData.history);
+
                     userData.history.splice(i, 1);
+
+                    console.log('History1 : ',userData.history);
+
                     await axios.put(`http://localhost:4000/users/${userData._id}`, userData);
                     await axios.delete(`http://localhost:4000/treatments/${treatmentData._id}`);
                 }
@@ -946,7 +959,14 @@ export const deleteEvent = async (event_id) => {
 export const getUsers = async () => {
     try {
         const response = await axios.get('http://localhost:4000/users');
-        return response.data;
+        let users = response.data;
+        users = users.map((user,index) => {
+            return {
+                nr:index + 1,
+                ...user,
+            }
+        })
+        return users;
     } catch (error) {
         console.error('Error getting users: ', error);
         return [];
@@ -980,14 +1000,17 @@ export const getAllEmployees = async (setRecords) => {
 
 export const getEmployees = async (setRecords)=>{
 
-    const querySnapshot = await getDocs(collection(db, "events"));
+    const events = await axios.get('http://localhost:4000/capsules');
+    console.log(events.data)
     let employees = [];
-    querySnapshot.forEach((doc) => {
+    events.data.forEach((doc) => {
         employees.push({
-            id:doc.id,
-            ...(doc.data()),
+            id:doc.event_id,
+            ...(doc),
         })
     });
+
+    console.log(employees)
     setRecords(employees)
 
 }
