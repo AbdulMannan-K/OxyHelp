@@ -43,7 +43,6 @@ const styles = {
 
 const headCells = [
     { id: 'serialNumber', label:'Nr.'},
-    { id: 'uid', label: 'UID' },
     { id: 'firstName', label: 'First Name' },
     { id: 'secondName', label: 'Last Name' },
     { id: 'email', label: 'Email' },
@@ -108,7 +107,6 @@ export function Employees() {
 
     async function deleteUser(user) {
         await deleteEmployee(user.email);
-        await axios.delete(`https://oxyadmin.gntcgroup.com/deleteUser/${user.uid}`)
         setRecords(records.filter((item) => item.email !== user.email));
     }
 
@@ -154,7 +152,6 @@ export function Employees() {
                             recordsAfterPagingAndSorting().map((user,index) =>
                                 (<TableRow key={user.email}>
                                     <TableCell>{("0000" + (index+1)).slice(-5)}</TableCell>
-                                    <TableCell>{user.uid?user.uid:''}</TableCell>
                                     <TableCell>{user.firstName}</TableCell>
                                     <TableCell>{user.secondName}</TableCell>
                                     <TableCell>{user.email}</TableCell>

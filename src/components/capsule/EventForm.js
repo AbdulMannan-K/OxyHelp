@@ -41,6 +41,7 @@ const initialValues = {
     meter:0,
     deletable:true,
     comment:'',
+    clientId:'',
     treatmentId:'',
 }
 
@@ -212,7 +213,7 @@ function EventForm(props) {
         let c= values.client;
         setValues({...values,client:c.split(' ')})
         const client = clients.find(client => client.phoneNumber === values.client.split(" ")[0]);
-
+        values.clientId = client._id;
         values.otherClients = arr.map(i => i.value);
         values.freeOfCost = checked ? 'yes' : 'no';
         values.clientName = client.firstName + ' ' + client.lastName;
@@ -221,8 +222,9 @@ function EventForm(props) {
 
         let newTreatment=false;
         if(values.treatment===1) newTreatment=true;
-
+        values.clientId = client._id;
         values.client = values.client.split(" ")[0]
+
         if (selectedTime !== 0 && values.title !== "" && values.treatment !== 0 && values.client !== "" && values.start !== "") {
             if (!checked && values.employee === '') {
                 alert('Some thing is not selected')
@@ -249,7 +251,7 @@ function EventForm(props) {
                     }
                 }
 
-                let addedEvents = await addMultipleEvents(events,values.client,newTreatment,values.treatment);
+                let addedEvents = await addMultipleEvents(events,values.clientId,newTreatment,values.treatment);
                 props.openPopup(false);
                 props.setEvents([...props.events,...addedEvents]);
                 props.triggerLoading(false);
