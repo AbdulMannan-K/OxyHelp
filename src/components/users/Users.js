@@ -7,7 +7,7 @@ import {
     InputAdornment,
     Typography, Input, Button, TableRow, ImageListItem, ImageList, Slide, Toolbar
 } from '@mui/material';
-import { Search } from "@mui/icons-material";
+import {Delete, Search} from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -16,7 +16,7 @@ import IconButton from "@mui/material/IconButton";
 import Popup from "../controls/Popup";
 import Money from "@mui/icons-material/Money"
 import useTable from "./useTable";
-import {addUser, getEventsOfClients, getUsers, updateStatus} from "../../services/services";
+import {addUser, delUser, getEventsOfClients, getUsers, updateStatus, updateUser} from "../../services/services";
 import axios from "axios";
 import ImageViewer from "react-simple-image-viewer";
 import Dialog from '@mui/material/Dialog';
@@ -152,7 +152,11 @@ export default function Users() {
         setIsViewerOpenA(false);
     }
     const addOrEdit = async (user, resetForm) => {
-        setRecords((await addUser(user,records.length==0?1:records.length+1)));
+        if(recordForEdit){
+            setRecords(await updateUser(user))
+        }else{
+            setRecords((await addUser(user,records.length==0?1:records.length+1)));
+        }
         setRecordForEdit(null);
         setOpenPopup(false)
         setOpenBQPopup(false);
@@ -176,6 +180,10 @@ export default function Users() {
         setImage(e.target.files[0]);
     }
 
+    const deleteUser = async (user) => {
+        setRecords(await delUser(user));
+    }
+
     const handleImageSubmit = (e,client)=>{
         e.preventDefault()
         if(client.questionnaire.length==5) {
@@ -192,7 +200,7 @@ export default function Users() {
         axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.questionnaire.push(res.data)
-            setRecords(await addUser(client));
+            setRecords(await updateUser(client));
         })
     }
 
@@ -212,7 +220,7 @@ export default function Users() {
         axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.afterQues.push(res.data)
-            setRecords(await addUser(client));
+            setRecords(await updateUser(client));
         })
     }
 
@@ -232,7 +240,7 @@ export default function Users() {
         axios.post("https://oxyadmin.gntcgroup.com/", formData, {
         }).then(async res => {
             client.beforeQues.push(res.data)
-            setRecords(await addUser(client));
+            setRecords(await updateUser(client));
         })
     }
 
@@ -274,7 +282,7 @@ export default function Users() {
         } else if (type == 'Question') {
             recordForEdit.questionnaire=recordForEdit.questionnaire.filter((item) => item != question)
         }
-        setRecords(await addUser(recordForEdit));
+        setRecords(await updateUser(recordForEdit));
         let imageName = question.split('/');
         axios.delete(`https://oxyadmin.gntcgroup.com/${imageName[imageName.length - 1]}`, {}).then(async res => {
             console.log(res)
@@ -329,6 +337,11 @@ export default function Users() {
                                                 color="primary"
                                                 onClick={() => { openInPopup(user) }}
                                             ><EditOutlinedIcon fontSize="small"/>
+                                            </IconButton>
+                                            <IconButton
+                                                color="error"
+                                                onClick={() => { deleteUser(user) }}
+                                            ><Delete fontSize="small"/>
                                             </IconButton>
                                         </TableCell>
                                         <TableCell >

@@ -54,17 +54,7 @@ function EmployeeForm(props) {
             axios.get(`https://api.hunter.io/v2/email-verifier?email=${values.email}&api_key=2bc3901db054f5453dc64dc58ee629d28ee0093c`).then(async res => {
                 let valid = (res.data.data.status)
                 if (valid === 'valid') {
-                    await createUserWithEmailAndPassword(auth, values.email, values.password).then(async (response) => {
-                        console.log(response)
-                        values.uid=response.user.uid
-                        props.addItem(values, resetForm);
-                    }).catch(
-                        err => {
-                            alert(err.message)
-                            console.log(err);
-                            return
-                        }
-                    )
+                    props.addItem(values, resetForm);
                 }else{
                     alert('Not a Valid Email')
                 }

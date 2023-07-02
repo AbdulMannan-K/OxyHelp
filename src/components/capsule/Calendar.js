@@ -65,7 +65,7 @@ function WeekScheduler() {
 
     const addEvents = async (event, resetForm, newTreatment) => {
         triggerLoading(true);
-        const addedEvent = await addEvent(event, event.client, newTreatment);
+        const addedEvent = await addEvent(event, event.clientId, newTreatment);
         setEvents([...events, addedEvent]);
         resetForm();
         setOpenPopup(false);
@@ -94,8 +94,8 @@ function WeekScheduler() {
         let gevents = ((await getEvents())).map(event => {
             return {
                 ...event,
-                start: (new Date(event.start.seconds * 1000)),
-                end: new Date(event.end.seconds * 1000),
+                start: (new Date(event.start)),
+                end: new Date(event.end),
                 deletable: true,
             }
         })
