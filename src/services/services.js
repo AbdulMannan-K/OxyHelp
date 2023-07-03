@@ -46,7 +46,7 @@ export const addUser = async (user, serial) => {
             history: user.history
         };
 
-        await axios.post('http://localhost:4000/users', userData);
+        await axios.post('https://oxyadmin.gntcgroup.com/users', userData);
         return await getUsers();
     } catch (error) {
         console.error('Error adding document: ', error);
@@ -54,13 +54,13 @@ export const addUser = async (user, serial) => {
 };
 
 export const delUser = async (user)=>{
-    await axios.delete(`http://localhost:4000/users/${user._id}`);
+    await axios.delete(`https://oxyadmin.gntcgroup.com/users/${user._id}`);
     return await getUsers();
 }
 
 export const updateUser = async (user)=> {
     console.log(user)
-    await axios.put(`http://localhost:4000/users/${user._id}`,user);
+    await axios.put(`https://oxyadmin.gntcgroup.com/users/${user._id}`,user);
     return await getUsers();
 }
 
@@ -77,7 +77,7 @@ export const updateUser = async (user)=> {
 
 export const getTreatment = async (treatment) => {
     try {
-        const response = await axios.get(`http://localhost:4000/treatments/${treatment}`);
+        const response = await axios.get(`https://oxyadmin.gntcgroup.com/treatments/${treatment}`);
         const treatmentData = response.data;
         return { ...treatmentData, id: treatmentData._id };
     } catch (error) {
@@ -95,7 +95,7 @@ export const getTreatment = async (treatment) => {
 
 export const getEvent = async (event_id) => {
     try {
-        const response = await axios.get(`http://localhost:4000/events/${event_id}`);
+        const response = await axios.get(`https://oxyadmin.gntcgroup.com/events/${event_id}`);
         const eventData = response.data;
         return { ...eventData, event_id: eventData._id };
     } catch (error) {
@@ -164,13 +164,13 @@ export const addTreatment = async (treatment, event, user) => {
             currentRegistered: 1,
         };
 
-        const response = await axios.post('http://localhost:4000/treatments', treatmentData);
+        const response = await axios.post('https://oxyadmin.gntcgroup.com/treatments', treatmentData);
         const treatmentId = response.data._id;
         console.log('user : ',user)
-        const userDocRef = await axios.get(`http://localhost:4000/users/${user}`);
+        const userDocRef = await axios.get(`https://oxyadmin.gntcgroup.com/users/${user}`);
         const findUser = userDocRef.data;
         findUser.history.push(treatmentId);
-        await axios.put(`http://localhost:4000/users/${user}`, findUser);
+        await axios.put(`https://oxyadmin.gntcgroup.com/users/${user}`, findUser);
 
         event.treatmentId = treatmentId;
         await updateStatus(event, event.status);
@@ -204,7 +204,7 @@ export const updateTreatment = async (treatment) => {
             currentRegistered,
         };
 
-        await axios.put(`http://localhost:4000/treatments/${id}`, updatedTreatment);
+        await axios.put(`https://oxyadmin.gntcgroup.com/treatments/${id}`, updatedTreatment);
     } catch (error) {
         console.error('Error updating treatment: ', error);
     }
@@ -236,7 +236,7 @@ export const signUp = async (employee) => {
             role: employee.role,
         };
 
-        await axios.post('http://localhost:4000/employees', newEmployee);
+        await axios.post('https://oxyadmin.gntcgroup.com/employees', newEmployee);
     } catch (error) {
         console.error('Error adding employee: ', error);
     }
@@ -253,7 +253,7 @@ export const signUp = async (employee) => {
 
 export const deleteEmployee = async (employee) => {
     try {
-        await axios.delete(`http://localhost:4000/employees/${employee}`);
+        await axios.delete(`https://oxyadmin.gntcgroup.com/employees/${employee}`);
     } catch (error) {
         console.error('Error deleting employee: ', error);
     }
@@ -269,7 +269,7 @@ export const deleteEmployee = async (employee) => {
 
 export const getEmp = async (employeeId) => {
     try {
-        const response = await axios.get(`http://localhost:4000/employees/${employeeId}`);
+        const response = await axios.get(`https://oxyadmin.gntcgroup.com/employees/${employeeId}`);
         console.log(response)
         return response.data[0];
     } catch (error) {
@@ -358,8 +358,8 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
             currentRegistered: treatments
         }
 
-        const treatment = await axios.post('http://localhost:4000/treatments',treatmentPayLoad);
-        const userData = (await axios.get(`http://localhost:4000/users/${user}`)).data;
+        const treatment = await axios.post('https://oxyadmin.gntcgroup.com/treatments',treatmentPayLoad);
+        const userData = (await axios.get(`https://oxyadmin.gntcgroup.com/users/${user}`)).data;
         console.log('treatment : ')
         console.log(treatment.data)
         userData.history.push(treatment.data._id);
@@ -394,7 +394,7 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
                 treatmentId: treatmentId,
             }
 
-            const addedEvent = (await axios.post('http://localhost:4000/capsules',eventPayLoad)).data;
+            const addedEvent = (await axios.post('https://oxyadmin.gntcgroup.com/capsules',eventPayLoad)).data;
 
             eventsDocRef.push(addedEvent._id);
             let role = localStorage.getItem('Role');
@@ -409,7 +409,7 @@ export const addMultipleEvents = async (events,user,newTreatment,treatments)=>{
     }
     allEvents.push(...eventsRefs)
 
-    let treatment = (await axios.get(`http://localhost:4000/treatments/${treatmentId}`)).data;
+    let treatment = (await axios.get(`https://oxyadmin.gntcgroup.com/treatments/${treatmentId}`)).data;
     // const treatment = getDoc(doc(db,"treatments",treatmentId));
     treatment.events = (eventsDocRef);
     treatment = {...treatment, id:treatmentId};
@@ -513,7 +513,7 @@ export const addEvent = async (aEvent, user, newTreatment) => {
 
         console.log('eventPayLoad',eventPayload)
 
-        const response = await axios.post('http://localhost:4000/capsules', eventPayload);
+        const response = await axios.post('https://oxyadmin.gntcgroup.com/capsules', eventPayload);
         const eventDocRef = response.data._id;
         let role = localStorage.getItem('Role');
 
@@ -607,8 +607,8 @@ export const getConsultantEvents = async (setRecords)=> {
 
 export const getEvents = async () => {
     try {
-        const eventsResponse = await axios.get('http://localhost:4000/capsules');
-        const treatmentsResponse = await axios.get('http://localhost:4000/treatments');
+        const eventsResponse = await axios.get('https://oxyadmin.gntcgroup.com/capsules');
+        const treatmentsResponse = await axios.get('https://oxyadmin.gntcgroup.com/treatments');
 
         const treatments = {};
         treatmentsResponse.data.forEach((treatment) => {
@@ -738,7 +738,7 @@ export const getEventsOnSpecificDate = async (date,capsule,client) => {
 // };
 
 const getAll = async (docRefs) => {
-    const promises = docRefs.map((ref) => axios.get(`http://localhost:4000/treatments/${ref}`));
+    const promises = docRefs.map((ref) => axios.get(`https://oxyadmin.gntcgroup.com/treatments/${ref}`));
     const responses = await Promise.all(promises);
     const docs = responses.map((response) => {
         return {
@@ -758,7 +758,7 @@ export const getEventsOfClients = async (docs) => {
 
         const eventRefs = snapshots.flatMap((snap) => snap.events.map((eventId) => eventId));
         const eventResponses = await Promise.all(
-            eventRefs.map((eventId) => axios.get(`http://localhost:4000/events/${eventId}`))
+            eventRefs.map((eventId) => axios.get(`https://oxyadmin.gntcgroup.com/events/${eventId}`))
         );
 
         for (let i = 0; i < eventResponses.length; i++) {
@@ -856,7 +856,7 @@ export const updateStatus = async (aEvent, status) => {
             treatmentId: aEvent.treatmentId
         };
 
-        await axios.put(`http://localhost:4000/capsules/${aEvent.event_id}`, eventData);
+        await axios.put(`https://oxyadmin.gntcgroup.com/capsules/${aEvent.event_id}`, eventData);
 
         let event = allEvents.find(e => e.event_id === aEvent.event_id);
         event.start = aEvent.start;
@@ -905,19 +905,19 @@ export const updateStatus = async (aEvent, status) => {
 
 export const deleteEvent = async (event_id) => {
     try {
-        const event = await axios.get(`http://localhost:4000/capsules/${event_id}`);
+        const event = await axios.get(`https://oxyadmin.gntcgroup.com/capsules/${event_id}`);
         const eventData = event.data;
 
-        const user = await axios.get(`http://localhost:4000/users/${eventData.clientId}`);
+        const user = await axios.get(`https://oxyadmin.gntcgroup.com/users/${eventData.clientId}`);
         const userData = user.data;
 
         for (let i = 0; i < userData.history.length; i++) {
-            const treatment = await axios.get(`http://localhost:4000/treatments/${userData.history[i]}`);
+            const treatment = await axios.get(`https://oxyadmin.gntcgroup.com/treatments/${userData.history[i]}`);
             const treatmentData = treatment.data;
 
             if (treatmentData.events.includes(event_id)) {
                 treatmentData.events = treatmentData.events.filter(id => id !== event_id);
-                await axios.put(`http://localhost:4000/treatments/${treatmentData._id}`, treatmentData);
+                await axios.put(`https://oxyadmin.gntcgroup.com/treatments/${treatmentData._id}`, treatmentData);
 
                 console.log('Length : ',treatmentData.events.length);
 
@@ -928,14 +928,14 @@ export const deleteEvent = async (event_id) => {
 
                     console.log('History1 : ',userData.history);
 
-                    await axios.put(`http://localhost:4000/users/${userData._id}`, userData);
-                    await axios.delete(`http://localhost:4000/treatments/${treatmentData._id}`);
+                    await axios.put(`https://oxyadmin.gntcgroup.com/users/${userData._id}`, userData);
+                    await axios.delete(`https://oxyadmin.gntcgroup.com/treatments/${treatmentData._id}`);
                 }
                 break;
             }
         }
 
-        await axios.delete(`http://localhost:4000/capsules/${event_id}`);
+        await axios.delete(`https://oxyadmin.gntcgroup.com/capsules/${event_id}`);
 
         allEvents = allEvents.filter(element => element !== eventData);
     } catch (error) {
@@ -958,7 +958,7 @@ export const deleteEvent = async (event_id) => {
 
 export const getUsers = async () => {
     try {
-        const response = await axios.get('http://localhost:4000/users');
+        const response = await axios.get('https://oxyadmin.gntcgroup.com/users');
         let users = response.data;
         users = users.map((user,index) => {
             return {
@@ -989,7 +989,7 @@ export const getUsers = async () => {
 
 export const getAllEmployees = async (setRecords) => {
     try {
-        const response = await axios.get('http://localhost:4000/employees');
+        const response = await axios.get('https://oxyadmin.gntcgroup.com/employees');
         const employees = response.data;
         setRecords(employees);
     } catch (error) {
@@ -1000,7 +1000,7 @@ export const getAllEmployees = async (setRecords) => {
 
 export const getEmployees = async (setRecords)=>{
 
-    const events = await axios.get('http://localhost:4000/capsules');
+    const events = await axios.get('https://oxyadmin.gntcgroup.com/capsules');
     console.log(events.data)
     let employees = [];
     events.data.forEach((doc) => {
