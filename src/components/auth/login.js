@@ -33,16 +33,15 @@ function Login(props) {
 
     async function handleSubmit() {
 
-        await signInWithEmailAndPassword(auth,values.email,values.password).then(async(response)=>{
-            const user = await getEmp(values.email)
-            localStorage.setItem('Auth Token', response._tokenResponse.refreshToken)
+            let user = await getEmp(values.email)
+            if(user.data[0]==null){
+                alert('Wrong Login Details, Please Enter again')
+                return
+            }
+            user = user.data[0]
             localStorage.setItem('Role', user.role)
             localStorage.setItem('employee', (user.firstName + ' ' + user.secondName))
             navigate('/capsules');
-        }).catch(err=>{
-            console.log(err);
-            alert('Wrong Login Details, Please Enter again')
-        })
 
     }
 

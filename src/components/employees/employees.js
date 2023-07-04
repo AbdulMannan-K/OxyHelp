@@ -82,7 +82,7 @@ export default function Employees() {
     },[employee,dateRangeStart,dateRangeEnd,selected])
 
     useEffect(() => {
-        const user = localStorage.getItem('Auth Token');
+        const user = localStorage.getItem('employee');
         if (!user) navigate("/login");
     }, [0]);
 

@@ -166,7 +166,7 @@ function ConsultantCalendar() {
     }, [0])
 
     useEffect(() => {
-        const user = localStorage.getItem('Auth Token');
+        const user = localStorage.getItem('employee');
         if (!user) navigate("/login")
     }, [0]);
 

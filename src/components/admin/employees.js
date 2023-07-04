@@ -65,7 +65,7 @@ export function Employees() {
 
 
     useEffect(() => {
-        const user = localStorage.getItem('Auth Token');
+        const user = localStorage.getItem('employee');
         if(user==null) navigate("/login")
         const role = localStorage.getItem('Role');
         if(role!=="Admin") navigate("/capsules")

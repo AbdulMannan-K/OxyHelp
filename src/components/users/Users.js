@@ -91,7 +91,7 @@ export default function Users() {
 
 
     useEffect(() => {
-        const user = localStorage.getItem('Auth Token');
+        const user = localStorage.getItem('employee');
         if(user==null) navigate("/login")
     }, [0]);
 
