@@ -260,87 +260,87 @@ function WeekScheduler() {
                     Canceled
                 </li>
             </div>
-            <button
-                onClick={async () => {
-                    const querySnapshot = await getDocs(collection(db, "clients"));
-                    let users = [];
-                    querySnapshot.forEach((doc) => {
-                        users.push({
-                            phoneNumber: doc.id,
-                            ...(doc.data()),
-                        })
-                    });
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const querySnapshot = await getDocs(collection(db, "clients"));*/}
+            {/*        let users = [];*/}
+            {/*        querySnapshot.forEach((doc) => {*/}
+            {/*            users.push({*/}
+            {/*                phoneNumber: doc.id,*/}
+            {/*                ...(doc.data()),*/}
+            {/*            })*/}
+            {/*        });*/}
 
-                    // add all these users into mongodb using axios
-                    users.forEach(async (user) => {
-                        await axios.post('https://oxyadmin.gntcgroup.com/users', user)
-                    })
+            {/*        // add all these users into mongodb using axios*/}
+            {/*        users.forEach(async (user) => {*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/users', user)*/}
+            {/*        })*/}
 
-                }}
-            >Export to mongodb clients</button>
-            <button
-                onClick={async () => {
-                  const querySnapshot = await getDocs(collection(db, "events"));
-                    let events = [];
-                    events = querySnapshot.docs.map(doc => {
-                        const eventId = doc.id;
-                        const eventData = doc.data();
-                        return {
-                            event_id: eventId,
-                            ...eventData,
-                            start: (new Date(eventData.start.seconds * 1000)),
-                            end: new Date(eventData.end.seconds * 1000),
-                            clientId: eventData.client,
-                        };
-                    });
+            {/*    }}*/}
+            {/*>Export to mongodb clients</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*      const querySnapshot = await getDocs(collection(db, "events"));*/}
+            {/*        let events = [];*/}
+            {/*        events = querySnapshot.docs.map(doc => {*/}
+            {/*            const eventId = doc.id;*/}
+            {/*            const eventData = doc.data();*/}
+            {/*            return {*/}
+            {/*                event_id: eventId,*/}
+            {/*                ...eventData,*/}
+            {/*                start: (new Date(eventData.start.seconds * 1000)),*/}
+            {/*                end: new Date(eventData.end.seconds * 1000),*/}
+            {/*                clientId: eventData.client,*/}
+            {/*            };*/}
+            {/*        });*/}
 
-                    // add all these events into mongodb using axios
-                    events.forEach(async (event) => {
-                        console.log(event)
-                        await axios.post('https://oxyadmin.gntcgroup.com/capsules', event)
-                    })
+            {/*        // add all these events into mongodb using axios*/}
+            {/*        events.forEach(async (event) => {*/}
+            {/*            console.log(event)*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/capsules', event)*/}
+            {/*        })*/}
 
-                }}
-            >Export to mongodb events</button>
-            <button
-                onClick={async () => {
-                    const querySnapshot = await getDocs(collection(db, "treatments"));
-                    let treatments = [];
-                    querySnapshot.forEach((doc) => {
-                        treatments.push({
-                            treatmentId: doc.id,
-                            ...(doc.data()),
-                        })
-                    });
+            {/*    }}*/}
+            {/*>Export to mongodb events</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const querySnapshot = await getDocs(collection(db, "treatments"));*/}
+            {/*        let treatments = [];*/}
+            {/*        querySnapshot.forEach((doc) => {*/}
+            {/*            treatments.push({*/}
+            {/*                treatmentId: doc.id,*/}
+            {/*                ...(doc.data()),*/}
+            {/*            })*/}
+            {/*        });*/}
 
-                    // add all these treatments into mongodb using axios
-                    treatments.forEach(async (treatment) => {
-                        await axios.post('https://oxyadmin.gntcgroup.com/treatments', treatment)
-                    })
-                }}
-            >
-                Export to mongodb treatments
-            </button>
-            <button
-                onClick={async () => {
-                    const events = (await axios.get('https://oxyadmin.gntcgroup.com/capsules')).data;
-                    const clients = (await axios.get('https://oxyadmin.gntcgroup.com/users')).data;
-                    const updatedEvents = events.map((event) => {
-                        const client = clients.find(client => client.phoneNumber === event.clientId);
-                        return{
-                            ...event,
-                            clientId: client._id,
-                        }
-                    }
-                    )
-                    updatedEvents.forEach(async (event) => {
-                        console.log(event)
-                        await axios.put(`https://oxyadmin.gntcgroup.com/capsules/${event.event_id}`, event)
-                    })
-                }}
-            >
-                link client id to events
-            </button>
+            {/*        // add all these treatments into mongodb using axios*/}
+            {/*        treatments.forEach(async (treatment) => {*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/treatments', treatment)*/}
+            {/*        })*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    Export to mongodb treatments*/}
+            {/*</button>*/}
+            {/*<button*/}
+            {/*    onClick={async () => {*/}
+            {/*        const events = (await axios.get('https://oxyadmin.gntcgroup.com/capsules')).data;*/}
+            {/*        const clients = (await axios.get('https://oxyadmin.gntcgroup.com/users')).data;*/}
+            {/*        const updatedEvents = events.map((event) => {*/}
+            {/*            const client = clients.find(client => client.phoneNumber === event.clientId);*/}
+            {/*            return{*/}
+            {/*                ...event,*/}
+            {/*                clientId: client._id,*/}
+            {/*            }*/}
+            {/*        }*/}
+            {/*        )*/}
+            {/*        updatedEvents.forEach(async (event) => {*/}
+            {/*            console.log(event)*/}
+            {/*            await axios.put(`https://oxyadmin.gntcgroup.com/capsules/${event.event_id}`, event)*/}
+            {/*        })*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    link client id to events*/}
+            {/*</button>*/}
             <div>
                 <button type="button"
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
