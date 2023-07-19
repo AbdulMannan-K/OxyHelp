@@ -67,11 +67,15 @@ const month = {
     disableGoToDay: false
 }
 
-
+function useForceUpdate(){
+    const [value, setValue] = useState(0); // integer state
+    return () => setValue(value => value + 1); // update state to force render
+}
 function WeekScheduler() {
 
     const {events, setEvents, triggerLoading,view} = useScheduler();
     const [openPopup, setOpenPopup] = useState(false);
+    const update = useForceUpdate();
     const navigate = useNavigate();
 
     const addEvents = async (event, resetForm, newTreatment) => {
@@ -99,30 +103,18 @@ function WeekScheduler() {
         }
     }
 
-
-    const getAllEvents = async () => {
-        let role = localStorage.getItem('Role');
-        let gevents = ((await getEvents())).map(event => {
-            return {
-                ...event,
-                start: (new Date(event.start)),
-                end: new Date(event.end),
-                deletable: true,
-            }
-        })
-        setEvents(gevents);
-    }
     function getMonthFromString(mon){
         return new Date(Date.parse(mon +" 1, 2012")).getMonth()+1
     }
     const getEventsByDate=(viewMode)=>{
+        console.log(viewMode)
         if(viewMode=='month'){
             let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
             let month = getMonthFromString(dateString.split(' ')[0]) - 1
             let year = parseInt(dateString.split(' ')[1].split('<')[0])
             let startDateTime = new Date((year), (month-1), 25)
-            let endDateTime = new Date((year), (month) + 1, 0)
-            console.log(month, year, startDateTime, endDateTime)
+            let endDateTime = new Date((year), (month) + 1, 5)
+            getEventsByDateRange(startDateTime, endDateTime, setEvents)
         }else if(viewMode=='week') {
             let dateString = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[1].innerHTML)
             let day = parseInt(dateString.split(' ')[0])
@@ -165,28 +157,22 @@ function WeekScheduler() {
         }, [delay]);
     }
 
-    // useInterval(() => {
-    //     getEventsByDate(view)
-    // }, 500);
-
     const updateEvent = async (event) => {
-        console.log(event)
         const treatment = await getTreatment(event.treatmentId)
         treatment.completed++;
         await updateTreatment(treatment);
         await updateStatus(event, 'Completed');
-        await getAllEvents();
+        await getEventsByDate(view)
     }
 
     const cancelEvent = async (event) => {
         await updateStatus(event, 'Canceled');
-        await getAllEvents();
+        await getEventsByDate(view)
     }
 
     const deleteE = async (id) => {
-        console.log(id)
         await deleteEvent(id);
-        await getAllEvents();
+        await getEventsByDate(view)
     }
 
     function applyCssBasedOnPosition() {
@@ -208,23 +194,24 @@ function WeekScheduler() {
     }
 
     useEffect(() => {
+        getEventsByDate(view)
         let button1 = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[0])
         let button2 = (document.querySelectorAll('[data-testid=date-navigator]')[0].children[2])
         button1.addEventListener('click', () => {
-            console.log('here')
             setTimeout(() => {
+                console.log('clicked')
                 getEventsByDate(view)
             } , 500)
         })
         button2.addEventListener('click', () => {
-            console.log('here')
             setTimeout(() => {
+                console.log('clicked')
+
                 getEventsByDate(view)
             } , 500)
         }
         )
-        getAllEvents();
-    }, [0])
+    }, [0, view])
 
     useEffect(() => {
         if (events.length > 0) {
@@ -242,7 +229,7 @@ function WeekScheduler() {
     }, [0])
 
     useEffect(() => {
-        const user = localStorage.getItem('Auth Token');
+        const user = localStorage.getItem('employee');
         if (!user) navigate("/login")
     }, [0]);
 
@@ -286,7 +273,7 @@ function WeekScheduler() {
 
             {/*        // add all these users into mongodb using axios*/}
             {/*        users.forEach(async (user) => {*/}
-            {/*            await axios.post('http://localhost:4000/users', user)*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/users', user)*/}
             {/*        })*/}
 
             {/*    }}*/}
@@ -310,7 +297,7 @@ function WeekScheduler() {
             {/*        // add all these events into mongodb using axios*/}
             {/*        events.forEach(async (event) => {*/}
             {/*            console.log(event)*/}
-            {/*            await axios.post('http://localhost:4000/capsules', event)*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/capsules', event)*/}
             {/*        })*/}
 
             {/*    }}*/}
@@ -328,8 +315,7 @@ function WeekScheduler() {
 
             {/*        // add all these treatments into mongodb using axios*/}
             {/*        treatments.forEach(async (treatment) => {*/}
-            {/*            console.log(treatment)*/}
-            {/*            await axios.post('http://localhost:4000/treatments', treatment)*/}
+            {/*            await axios.post('https://oxyadmin.gntcgroup.com/treatments', treatment)*/}
             {/*        })*/}
             {/*    }}*/}
             {/*>*/}
@@ -337,8 +323,8 @@ function WeekScheduler() {
             {/*</button>*/}
             {/*<button*/}
             {/*    onClick={async () => {*/}
-            {/*        const events = (await axios.get('http://localhost:4000/capsules')).data;*/}
-            {/*        const clients = (await axios.get('http://localhost:4000/users')).data;*/}
+            {/*        const events = (await axios.get('https://oxyadmin.gntcgroup.com/capsules')).data;*/}
+            {/*        const clients = (await axios.get('https://oxyadmin.gntcgroup.com/users')).data;*/}
             {/*        const updatedEvents = events.map((event) => {*/}
             {/*            const client = clients.find(client => client.phoneNumber === event.clientId);*/}
             {/*            return{*/}
@@ -349,7 +335,7 @@ function WeekScheduler() {
             {/*        )*/}
             {/*        updatedEvents.forEach(async (event) => {*/}
             {/*            console.log(event)*/}
-            {/*            await axios.put(`http://localhost:4000/capsules/${event._id}`, event)*/}
+            {/*            await axios.put(`https://oxyadmin.gntcgroup.com/capsules/${event.event_id}`, event)*/}
             {/*        })*/}
             {/*    }}*/}
             {/*>*/}
