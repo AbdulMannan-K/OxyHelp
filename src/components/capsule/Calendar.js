@@ -273,7 +273,7 @@ function WeekScheduler() {
 
             {/*        // add all these users into mongodb using axios*/}
             {/*        users.forEach(async (user) => {*/}
-            {/*            await axios.post('https://oxyadmin.gntcgroup.com/users', user)*/}
+            {/*            await axios.post('http://localhost:4000/users', user)*/}
             {/*        })*/}
 
             {/*    }}*/}
@@ -297,7 +297,7 @@ function WeekScheduler() {
             {/*        // add all these events into mongodb using axios*/}
             {/*        events.forEach(async (event) => {*/}
             {/*            console.log(event)*/}
-            {/*            await axios.post('https://oxyadmin.gntcgroup.com/capsules', event)*/}
+            {/*            await axios.post('http://localhost:4000/capsules', event)*/}
             {/*        })*/}
 
             {/*    }}*/}
@@ -315,7 +315,7 @@ function WeekScheduler() {
 
             {/*        // add all these treatments into mongodb using axios*/}
             {/*        treatments.forEach(async (treatment) => {*/}
-            {/*            await axios.post('https://oxyadmin.gntcgroup.com/treatments', treatment)*/}
+            {/*            await axios.post('http://localhost:4000/treatments', treatment)*/}
             {/*        })*/}
             {/*    }}*/}
             {/*>*/}
@@ -323,8 +323,8 @@ function WeekScheduler() {
             {/*</button>*/}
             {/*<button*/}
             {/*    onClick={async () => {*/}
-            {/*        const events = (await axios.get('https://oxyadmin.gntcgroup.com/capsules')).data;*/}
-            {/*        const clients = (await axios.get('https://oxyadmin.gntcgroup.com/users')).data;*/}
+            {/*        const events = (await axios.get('http://localhost:4000/capsules')).data;*/}
+            {/*        const clients = (await axios.get('http://localhost:4000/users')).data;*/}
             {/*        const updatedEvents = events.map((event) => {*/}
             {/*            const client = clients.find(client => client.phoneNumber === event.clientId);*/}
             {/*            return{*/}
@@ -335,7 +335,7 @@ function WeekScheduler() {
             {/*        )*/}
             {/*        updatedEvents.forEach(async (event) => {*/}
             {/*            console.log(event)*/}
-            {/*            await axios.put(`https://oxyadmin.gntcgroup.com/capsules/${event.event_id}`, event)*/}
+            {/*            await axios.put(`http://localhost:4000/capsules/${event.event_id}`, event)*/}
             {/*        })*/}
             {/*    }}*/}
             {/*>*/}

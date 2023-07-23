@@ -197,7 +197,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
             client.questionnaire.push(res.data)
             setRecords(await updateUser(client));
@@ -217,7 +217,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
             client.afterQues.push(res.data)
             setRecords(await updateUser(client));
@@ -237,7 +237,7 @@ export default function Users() {
         const formData = new FormData()
         formData.append('image', image)
         formData.append('client',client.phoneNumber )
-        axios.post("https://oxyadmin.gntcgroup.com/", formData, {
+        axios.post("http://localhost:4000/", formData, {
         }).then(async res => {
             client.beforeQues.push(res.data)
             setRecords(await updateUser(client));
@@ -284,7 +284,7 @@ export default function Users() {
         }
         setRecords(await updateUser(recordForEdit));
         let imageName = question.split('/');
-        axios.delete(`https://oxyadmin.gntcgroup.com/${imageName[imageName.length - 1]}`, {}).then(async res => {
+        axios.delete(`http://localhost:4000/${imageName[imageName.length - 1]}`, {}).then(async res => {
             console.log(res)
         })
     }
@@ -639,10 +639,10 @@ export default function Users() {
                                             {h.title}
                                         </th>
                                         <td className="px-6 py-4">
-                                            {new Date(h.start.seconds*1000).toLocaleDateString("en-GB")}
+                                            {new Date(h.start).toLocaleDateString("en-GB")}
                                         </td>
                                         <td className="px-6 py-4">
-                                            {new Date(h.start.seconds*1000).toLocaleTimeString("en-GB")}
+                                            {new Date(h.start).toLocaleTimeString("en-GB")}
                                         </td>
                                         <td className={`  `}>
                                             <p className={`rounded-full text-white px-6 py-2  ${h.status == 'Reserved' ? 'bg-blue-800' : h.status == 'Completed' ? 'bg-green-700' : 'bg-red-500'}`}>{h.status}</p>
